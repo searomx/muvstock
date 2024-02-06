@@ -7,7 +7,7 @@ const Navbar = ({ toggle }: { toggle: () => void }) => {
     return (
         <>
             <div className="w-full h-20 bg-slate-900 sticky top-0">
-                <div className="container px-4 h-full">
+                <div className="container px-4 h-full min-w-full">
                     <div className="flex justify-between items-center h-full">
                         <Logo />
                         <button

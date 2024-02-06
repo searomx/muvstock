@@ -1,32 +1,33 @@
-import { FaGithub, FaTwitter, FaInstagramSquare, FaFacebook } from 'react-icons/fa';
+import { FaInstagramSquare, FaFacebook } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 export function SocialIcons() {
-    return (
-        <div className="flex gap-x-4">
-            {/* Twitter icon */}
-            <a
-                href="https://twitter.com/flaxyz"
-                target="_blank"
-                rel=""
-            >
-                <FaTwitter className="text-white hover:text-gray-300" />
-            </a>
-            {/* Instagran icon */}
-            <a
-                href="#"
-                target="_blank"
-                rel=""
-            >
-                <FaInstagramSquare className="text-white hover:text-gray-300" />
-            </a>
-            {/* Instagran icon */}
-            <a
-                href="#"
-                target="_blank"
-                rel=""
-            >
-                <FaFacebook className="text-white hover:text-gray-300" />
-            </a>
-            {/* Add more social media icons as needed */}
-        </div>
-    );
+  return (
+    <div className="flex gap-x-4">
+      {/* Twitter icon */}
+      <a
+        href="https://twitter.com/flaxyz"
+        target="_blank"
+        rel=""
+      >
+        <FaXTwitter size={24} className="text-black hover:text-gray-700" />
+      </a>
+      {/* Instagran icon */}
+      <a
+        href="#"
+        target="_blank"
+        rel=""
+      >
+        <FaInstagramSquare size={24} className="text-pink-600 hover:text-pink-400" />
+      </a>
+      {/* Instagran icon */}
+      <a
+        href="#"
+        target="_blank"
+        rel=""
+      >
+        <FaFacebook size={24} className="text-blue-700 hover:text-blue-400" />
+      </a>
+      {/* Add more social media icons as needed */}
+    </div>
+  );
 }

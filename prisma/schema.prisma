@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id String   @id @default(auto()) @map("_id") @db.ObjectId
+  abertura String?
+  situacao String?
+  tipo String?
+  nome String?
+  porte String?
+  natureza_juridica String?
+  atividade_principal AtividadePrincipal[]
+  atividades_secundarias AtividadesSecundarias[]
+  qsa Qsa[]
+  logradouro String?
+  numero String?
+  complemento String?
+  municipio String?
+  bairro String?
+  uf String?
+  cep String?
+  email String?
+  telefone String?
+  data_situacao String?
+  cnpj String?
+  ultima_atualizacao String?
+  status String?
+  fantasia String?
+  efr String?
+  motivo_situacao String?
+  situacao_especial String?
+  data_situacao_especial String?
+  capital_social String?
+  extra String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+type AtividadePrincipal {
+  code String?
+  text String?
+}
+type AtividadesSecundarias {
+  code String?
+  text String?
+}
+type Qsa {
+  nome String?
+  qual String?
+  pais_origem String?
+  nome_rep_legal String?
+  qual_rep_legal String?
+}
+
+
+//
+// model Customer {
+//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name    String?
+//   cnpj    String?
+//   email   String?   @unique
+//   role    Role     @default(USER)
+//   posts   Post[]
+//   profile Profile?
+// }
+
+// model Profile {
+//   id     String @id @default(auto()) @map("_id") @db.ObjectId
+//   bio    String
+//   user   Customer   @relation(fields: [userId], references: [id])
+//   userId String @unique @db.ObjectId
+// }
+
+// model Post {
+//   id          String     @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt   DateTime   @default(now())
+//   title       String
+//   published   Boolean    @default(false)
+//   author      Customer       @relation(fields: [authorId], references: [id])
+//   authorId    String     @db.ObjectId
+//   categoryIDs String[]   @db.ObjectId
+//   categories  Category[] @relation(fields: [categoryIDs], references: [id])
+// }
+
+// model Category {
+//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name    String
+//   postIDs String[] @db.ObjectId
+//   posts   Post[]   @relation(fields: [postIDs], references: [id])
+// }
+
+// enum Role {
+//   USER
+//   ADMIN
+// }
+model Base {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  cnpj                String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Basex {
+  id                  String  @id @map("_id") @db.ObjectId
+  cnpj                String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Token {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  token               String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Unique{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  cnpj String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

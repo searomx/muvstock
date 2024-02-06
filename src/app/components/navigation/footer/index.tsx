@@ -8,23 +8,12 @@ import { SocialIcons } from '../../SocialIcons';
 
 // Define the Footer component
 export default function Footer() {
-    return (
-        <footer className='flex w-full p-4 bg-red-500 justify-between'>
-            {/* First section of the footer */}
-            <div>
-                {/* Display your name and the current year */}
-                <p>B4tech - Tecnology &copy; {new Date().getFullYear()}</p>
-            </div>
-            {/* Second section of the footer */}
-
-            <SocialIcons />
-
-            {/* <div className='ml-4'>
-                Provide a link to your Twitter profile
-                <a href="https://twitter.com/your-username">
-                    Connect on Twitter
-                </a>
-            </div> */}
-        </footer>
-    );
+  return (
+    <footer className='flex min-w-full p-4 bg-slate-200 justify-between rounded-b-sm'>
+      <div>
+        <p className='shadow-md shadow-zinc-700 p-2'>B4tech - Tecnology &copy; {new Date().getFullYear()}</p>
+      </div>
+      <SocialIcons />
+    </footer>
+  );
 }
