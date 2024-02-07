@@ -46,7 +46,7 @@ body {
 .tableContainer {
   max-height: 48rem;
   padding: 0.7rem;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 th,

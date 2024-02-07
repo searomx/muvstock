@@ -54,18 +54,22 @@ export default function TabelaCliente(props: TabelaClienteProps) {
       </td>
     )
   }
-
-
   return (
-    <div>
-      <table className="w-full">
-        <thead className="bg-amber-500 p-4">
-          {renderizarCabecalho()}
-        </thead>
-        <tbody>
-          {renderizarDados()}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="flex p-3 w-full h-20 overflow-hidden justify-center items-center">
+      </div>
+      <div className="flex flex-col min-w-full max-h-[calc(100vh-15.3rem)]">
+        <div className="tableContainer">
+          <table className="w-full">
+            <thead className="bg-amber-500 p-4">
+              {renderizarCabecalho()}
+            </thead>
+            <tbody>
+              {renderizarDados()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   )
 }

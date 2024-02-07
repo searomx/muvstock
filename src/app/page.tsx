@@ -1,18 +1,56 @@
 'use client';
 import TabelaCliente from "./components/clientes/TabelaCliente";
 import TabelaCnpjBase from "./components/cnpj/TabelaCnpj";
-import CnpjBase from "@/core/CnpjBase";
 import FormularioDadosCliente from "./components/FormularioDadosCliente";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./services/server";
-import { Base, Customer } from "@prisma/client";
+import { Customer } from "@prisma/client";
+import Papa from "papaparse";
+import CompleteString from "@/lib/utils/CompleteString";
 
 export default function Home() {
-  const [dadosBase, setDadosBase] = useState<Base[]>([]);
+  const [dadosBase, setDadosBase] = useState<BaseCnpj[]>([]);
   const [clientes, setClientes] = useState<Customer[] | null>([]);
   const [cliente, setCliente] = useState<Customer | null>(null);
   const [visivel, setVisivel] = useState<'tabcli' | 'formcli'>('tabcli');
   const [isLoading, setIsLoading] = useState(false);
+
+  type BaseCnpj = {
+    id: string;
+    cnpj: string;
+  }
+
+  const handlerCnpjBase = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    let cnpjs: BaseCnpj[] = [];
+    let dadosCnpjs: BaseCnpj[] = [];
+    const arquivo = e.target.files && e.target.files[0];
+    if (arquivo) {
+      Papa.parse(arquivo, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          cnpjs = results.data as BaseCnpj[];
+          cnpjs.map((item) => dadosCnpjs.push({
+            id: item.id,
+            cnpj: CompleteString.formatarPadString(item.cnpj.toString(), 14, "0"),
+          }));
+          setDadosBase(dadosCnpjs);
+          //SaveAsCnpj(dadosCnpjs);
+        },
+        error: (error) => {
+          alert("Erro ao analisar o CSV: " + error.message);
+        },
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    handlerCnpjBase; // Pass the event argument to the function call
+  }, [handlerCnpjBase, dadosBase]);
+
+  // ...
 
   const showDataClienteAll = useCallback(async () => {
     setIsLoading(true);
@@ -25,36 +63,15 @@ export default function Home() {
     showDataClienteAll();
   }, [showDataClienteAll]);
 
-  const cnpjs = [
-    new CnpjBase('00913443000173', '1'),
-    new CnpjBase('61198164000160', '2'),
-    new CnpjBase('33448150000200', '3'),
-    new CnpjBase('61573796000166', '4'),
-    new CnpjBase('61573796000409', '5'),
-    new CnpjBase('61573796014116', '6'),
-    new CnpjBase('33448150001860', '7'),
-    new CnpjBase('61550141009129', '8'),
-    new CnpjBase('33164021000100', '9'),
-    new CnpjBase('6155014100050', '10'),
-    new CnpjBase('6119816400024', '11'),
-    new CnpjBase('1092480800011', '12'),
-    new CnpjBase('4315830200079', '13'),
-    new CnpjBase('1092480800046', '14'),
-    new CnpjBase('3316402100044', '15'),
-    new CnpjBase('6155014100033', '16'),
-    new CnpjBase('6107417500013', '17'),
-    new CnpjBase('61074175000294', '18'),
-    new CnpjBase('61074175000375', '19'),
-    new CnpjBase('61074175000456', '20'),
-    new CnpjBase('61074175000537', '21'),
-    new CnpjBase('61074175000618', '22'),
-    new CnpjBase('61074175000790', '23'),
-    new CnpjBase('61074175000871', '24'),
-    new CnpjBase('61074175000952', '25'),
-
-  ];
+  const cnpjs = useMemo(() => {
+    return dadosBase.map((item) => {
+      return {
+        id: item.id,
+        cnpj: item.cnpj,
+      }
+    });
+  }, [dadosBase]);
   function detalhesDoCliente(cliente: Customer) {
-    console.log(cliente);
     setCliente(cliente);
     setVisivel('formcli');
   }
@@ -71,19 +88,11 @@ export default function Home() {
                          lg:grid-cols-2 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
             <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
-              <div className="tableContainer">
-
-                <TabelaCnpjBase cnpj={cnpjs} />
-              </div>
-
+              <TabelaCnpjBase base={dadosBase} handleFiles={handlerCnpjBase} />
             </div>
-            <div className="flex flex-col col-span-3 w-full min-h-[calc(100vh-9.3rem)]">
-              <div className="tableContainer">
-                <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
-              </div>
-
+            <div className="flex-initial col-span-3 w-full min-h-[calc(100vh-9.3rem)]">
+              <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
             </div>
-
           </div>
         ) : (
           <div className={`grid grid-cols-4 justify-items-center
@@ -93,7 +102,7 @@ export default function Home() {
                          2xl:grid-cols-4`}>
             <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
               <div className="tableContainer">
-                <TabelaCnpjBase cnpj={cnpjs} />
+                <TabelaCnpjBase base={dadosBase} handleFiles={handlerCnpjBase} />
               </div>
 
             </div>

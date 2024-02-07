@@ -102,17 +102,19 @@ type Qsa {
 //   USER
 //   ADMIN
 // }
+
+
 model Base {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   cnpj                String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 model Basex {
   id                  String  @id @map("_id") @db.ObjectId
   cnpj                String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Token {
