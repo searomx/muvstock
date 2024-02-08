@@ -7,6 +7,13 @@ import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
 import CompleteString from "@/lib/utils/CompleteString";
+import ValidaCnpj from "@/lib/utils/validacnpj";
+import ShowToast from "@/lib/utils/showToast";
+
+type BaseCnpj = {
+  id: string;
+  cnpj: string;
+}
 
 export default function Home() {
   const [dadosBase, setDadosBase] = useState<BaseCnpj[]>([]);
@@ -15,9 +22,42 @@ export default function Home() {
   const [visivel, setVisivel] = useState<'tabcli' | 'formcli'>('tabcli');
   const [isLoading, setIsLoading] = useState(false);
 
-  type BaseCnpj = {
-    id: string;
-    cnpj: string;
+  const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
+  const [inputToken, setInputToken] = useState<string>("");
+
+
+  const strtoken =
+    "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IndvcmxkIiwibWVzc2FnZSI6IlRoYW5rcyBmb3IgdmlzaXRpbmcgbm96emxlZ2Vhci5jb20hIiwiaXNzdWVkIjoxNTU3MjU4ODc3NTI2fQ.NXd7lC3rFLiNHXwefUu3OQ-R203pGfB87-dIrk2S-vqfaygIWFwZKzmGHr6pzYkl2a0HkY0fdwa38yLWu8Zdhg";
+  async function getCNPJ() {
+    const token = "INFORME O SEU TOKEN DE ACESSO";
+  }
+
+  async function onEnviarToken() {
+    if (inputToken.trim() === "") {
+      return;
+    }
+    const response = await api.post("/api/cnpj", {
+      token: inputToken,
+    });
+  }
+
+  function getInputToken(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    e.preventDefault();
+    if (inputToken.trim() === "") return;
+    console.log(inputToken);
+  }
+
+  async function enviarCnpjUnico() {
+    if (inputCnpjUnico.trim() === "") {
+      return;
+    }
+    const cnpj_validado = ValidaCnpj(inputCnpjUnico);
+    if (cnpj_validado) {
+      await api.post("/api/unique", { cnpj: cnpj_validado });
+      ShowToast.showToast("CNPJ salvo com sucesso!", "success");
+    } else {
+      ShowToast.showToast("CNPJ inválido!", "error");
+    }
   }
 
   const handlerCnpjBase = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +103,10 @@ export default function Home() {
     showDataClienteAll();
   }, [showDataClienteAll]);
 
+  useEffect(() => {
+    setInputToken(strtoken);
+  }, [inputToken]);
+
   const cnpjs = useMemo(() => {
     return dadosBase.map((item) => {
       return {
@@ -76,11 +120,53 @@ export default function Home() {
     setVisivel('formcli');
   }
   return (
-    <div className="flex flex-col min-w-full min-h-[calc(100vh-9.5rem)] bg-slate-700">
-      {isLoading && <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 z-50 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-      </div>}
-      <>
+    <>
+      <div className="flex flex-col min-w-full min-h-[calc(100vh-14.5rem)] bg-slate-700 p-4">
+        {isLoading && <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 z-50 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        </div>}
+        <div className="flex min-w-screen h-24 bg-sky-600 px-4 py-6 mb-4 gap-5 items-center rounded-md ">
+          <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
+            Selecionar um arquivo csv &#187;
+          </label>
+          <input
+            id="selecao-arquivo"
+            accept=".csv"
+            type="file"
+            onChange={handlerCnpjBase} />
+
+          <div className="p-1 border border-slate-400 rounded-sm">
+            <textarea
+              id="token"
+              name="token"
+              style={{ resize: "none" }}
+              cols={40}
+              rows={3}
+              placeholder="Insira o Token..."
+              value={inputToken}
+              onChange={(e) => setInputToken(e.target.value)}
+              className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
+            ></textarea>
+            <button onClick={onEnviarToken} className="botao botao-blue ml-3">
+              Enviar Token
+            </button>
+          </div>
+          <input
+            type="text"
+            onChange={(e) => setCnpjUnico(e.target.value)}
+            value={inputCnpjUnico}
+            className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
+            placeholder="Digite o Cnpj..."
+          />
+          <button
+            id="btn-enviar-individual"
+            onClick={enviarCnpjUnico}
+            className="botao botao-blue ml-3"
+          >
+            Enviar Cnpj Individual
+          </button>
+        </div>
+
         {visivel === 'tabcli' ? (
           <div className={`grid grid-cols-4 justify-items-center
                          gap-4
@@ -88,7 +174,7 @@ export default function Home() {
                          lg:grid-cols-2 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
             <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
-              <TabelaCnpjBase base={dadosBase} handleFiles={handlerCnpjBase} />
+              <TabelaCnpjBase base={dadosBase} />
             </div>
             <div className="flex-initial col-span-3 w-full min-h-[calc(100vh-9.3rem)]">
               <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
@@ -102,7 +188,7 @@ export default function Home() {
                          2xl:grid-cols-4`}>
             <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
               <div className="tableContainer">
-                <TabelaCnpjBase base={dadosBase} handleFiles={handlerCnpjBase} />
+                <TabelaCnpjBase base={dadosBase} />
               </div>
 
             </div>
@@ -115,7 +201,8 @@ export default function Home() {
 
           </div>
         )}
-      </>
-    </div>
+
+      </div >
+    </>
   );
 }

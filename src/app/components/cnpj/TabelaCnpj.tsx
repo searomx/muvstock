@@ -1,6 +1,6 @@
 interface TabelaCnpjBaseProps {
   base: any[] | null;
-  handleFiles: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  //handleFiles: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
@@ -26,16 +26,6 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
 
   return (
     <>
-      <div className="flex p-3 w-full h-20 overflow-hidden justify-center items-center">
-        <label htmlFor="selecao-arquivo" className="btn btn-blue cursor-pointer">
-          Selecionar um arquivo &#187;
-        </label>
-        <input
-          id="selecao-arquivo"
-          accept=".csv"
-          type="file"
-          onChange={props.handleFiles} />
-      </div>
       <div className="flex flex-col min-w-full max-h-[calc(100vh-15.3rem)]">
         <div className="tableContainer">
           <table className="w-full">

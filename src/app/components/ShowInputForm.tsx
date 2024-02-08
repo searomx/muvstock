@@ -5,10 +5,10 @@ interface ShowDataFormProps {
   name?: string;
   alinhaTexto?: 'left' | 'center' | 'right';
   corTexto?: string;
-  valor: any;
+  valor?: any;
   somenteLeitura?: boolean;
   className?: string;
-  tamanho: number
+  tamanho?: number;
   onChange?: (valor: any) => void;
 }
 
@@ -27,7 +27,6 @@ export default function ShowDataForm({ tipo, texto, name, corTexto, alinhaTexto,
         readOnly={somenteLeitura}
         size={tamanho}
         style={{ textAlign: alinhamento, color: corDoTexto }}
-
         onChange={e => onChange?.(e.target.value)}
         className={`border border-gray-400
          bg-gray-100 rounded-md

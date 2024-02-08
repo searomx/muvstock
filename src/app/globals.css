@@ -46,6 +46,8 @@ body {
 .tableContainer {
   max-height: 48rem;
   padding: 0.7rem;
+  border: solid 1px #e2e8f0;
+  border-radius: 0.8rem;
   overflow-y: scroll;
 }
 
@@ -94,7 +96,7 @@ th,
 }
 
 .botao {
-  @apply font-medium rounded-lg text-sm px-2 py-1 text-center me-2 mb-2;
+  @apply font-medium rounded-lg text-sm p-2 text-center me-2 mb-2;
 }
 .botao-purple {
   @apply bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 shadow-lg shadow-purple-500/50 dark:shadow-lg dark:shadow-purple-800/80;

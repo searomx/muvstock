@@ -13,7 +13,6 @@ export default function TabelaCliente(props: TabelaClienteProps) {
   function renderizarCabecalho() {
     return (
       <tr>
-        <th className="text-left p-4">Código</th>
         <th className="text-left p-4">Nome</th>
         <th className="text-left p-4">Cnpj</th>
         <th className="text-left p-4">Municipio</th>
@@ -26,7 +25,6 @@ export default function TabelaCliente(props: TabelaClienteProps) {
     return props.clientes?.map((cliente, i) => {
       return (
         <tr key={cliente.id} className={`${i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}`}>
-          <td className="text-left p-4">{cliente.id}</td>
           <td className="text-left p-4">{cliente.nome}</td>
           <td className="text-left p-4">{cliente.cnpj}</td>
           <td className="text-left p-4">{cliente.municipio}</td>
@@ -56,19 +54,15 @@ export default function TabelaCliente(props: TabelaClienteProps) {
   }
   return (
     <>
-      <div className="flex p-3 w-full h-20 overflow-hidden justify-center items-center">
-      </div>
-      <div className="flex flex-col min-w-full max-h-[calc(100vh-15.3rem)]">
-        <div className="tableContainer">
-          <table className="w-full">
-            <thead className="bg-amber-500 p-4">
-              {renderizarCabecalho()}
-            </thead>
-            <tbody>
-              {renderizarDados()}
-            </tbody>
-          </table>
-        </div>
+      <div className="tableContainer">
+        <table className="min-w-full min-h-full">
+          <thead className="bg-amber-500 p-4">
+            {renderizarCabecalho()}
+          </thead>
+          <tbody>
+            {renderizarDados()}
+          </tbody>
+        </table>
       </div>
     </>
   )
