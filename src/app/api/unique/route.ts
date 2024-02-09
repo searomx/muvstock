@@ -36,7 +36,7 @@ type Idados = {
 
 export const POST = async (req: Request, res: Response) => {
   const { cnpj }: ParamsCnpjProps = await req.json();
-  console.log("cnpj: ", cnpj);
+  console.log("cnpj-post: ", cnpj);
 
   if (cnpj) {
     const res = await prisma.customer.findFirst({

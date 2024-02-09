@@ -17,7 +17,7 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
     return props.base?.map((cnpj, i) => {
       return (
         <tr key={cnpj.id} className={`${i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}`}>
-          <td className="text-left p-4">{cnpj.id}</td>
+          <td className="text-left p-4 w-16">{cnpj.id}</td>
           <td className="text-left p-4">{cnpj.cnpj}</td>
         </tr>
       )
@@ -37,6 +37,29 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
             </tbody>
           </table>
         </div>
+        <div className='flex items-center justify-end space-x-2 border border-solid rounded-sm bg-slate-300 p-1 '>
+          <button
+
+          >
+            Primeira
+          </button>
+          <button
+
+          >
+            Anterior
+          </button>
+          <button
+
+          >
+            Próximo
+          </button>
+          <button
+
+          >
+            Última
+          </button>
+        </div>
+
       </div>
     </>
   )

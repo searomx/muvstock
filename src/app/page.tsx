@@ -9,6 +9,7 @@ import Papa from "papaparse";
 import CompleteString from "@/lib/utils/CompleteString";
 import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
+import TableBaseCnpj from "./components/cnpj/TableBaseCnpj";
 
 type BaseCnpj = {
   id: string;
@@ -55,6 +56,7 @@ export default function Home() {
     if (cnpj_validado) {
       await api.post("/api/unique", { cnpj: cnpj_validado });
       ShowToast.showToast("CNPJ salvo com sucesso!", "success");
+      console.log("CNPJ Validado:", cnpj_validado);
     } else {
       ShowToast.showToast("CNPJ inválido!", "error");
     }
@@ -135,7 +137,7 @@ export default function Home() {
             type="file"
             onChange={handlerCnpjBase} />
 
-          <div className="p-1 border border-slate-400 rounded-sm">
+          <div className="flex bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
             <textarea
               id="token"
               name="token"
@@ -151,21 +153,24 @@ export default function Home() {
               Enviar Token
             </button>
           </div>
-          <input
-            type="text"
-            onChange={(e) => setCnpjUnico(e.target.value)}
-            value={inputCnpjUnico}
-            className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
-            placeholder="Digite o Cnpj..."
-          />
-          <button
-            id="btn-enviar-individual"
-            onClick={enviarCnpjUnico}
-            className="botao botao-blue ml-3"
-          >
-            Enviar Cnpj Individual
-          </button>
+          <div className="flex bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 justify-center items-center">
+            <input
+              type="text"
+              onChange={(e) => setCnpjUnico(e.target.value)}
+              value={inputCnpjUnico}
+              className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
+              placeholder="Digite o Cnpj..."
+            />
+            <button
+              id="btn-enviar-individual"
+              onClick={enviarCnpjUnico}
+              className="botao botao-blue ml-3"
+            >
+              Enviar Cnpj Individual
+            </button>
+          </div>
         </div>
+
 
         {visivel === 'tabcli' ? (
           <div className={`grid grid-cols-4 justify-items-center
