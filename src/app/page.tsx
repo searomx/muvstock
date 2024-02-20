@@ -1,6 +1,6 @@
 'use client';
 import TabelaCliente from "./components/clientes/TabelaCliente";
-import TabelaCnpjBase from "./components/cnpj/TabelaCnpj";
+import TabelaCnpjBase from "./components/cnpj/TabelaCnpjBase";
 import FormularioDadosCliente from "./components/FormularioDadosCliente";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./services/server";
@@ -10,6 +10,7 @@ import CompleteString from "@/lib/utils/CompleteString";
 import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
 import TableBaseCnpj from "./components/cnpj/TableBaseCnpj";
+import Header from "./components/navigation/navbar/header";
 
 type BaseCnpj = {
   id: string;
@@ -109,25 +110,45 @@ export default function Home() {
     setInputToken(strtoken);
   }, [inputToken]);
 
-  const cnpjs = useMemo(() => {
-    return dadosBase.map((item) => {
-      return {
-        id: item.id,
-        cnpj: item.cnpj,
-      }
-    });
-  }, [dadosBase]);
+  // const cnpjs = useMemo(() => {
+  //   return dadosBase.map((item) => {
+  //     return {
+  //       id: item.id,
+  //       cnpj: item.cnpj,
+  //     }
+  //   });
+  // }, [dadosBase]);
   function detalhesDoCliente(cliente: Customer) {
     setCliente(cliente);
     setVisivel('formcli');
   }
+
+  //busca dados cnpj Base mongodb
+
+  const showCnpjAll = async () => {
+    let cnpjs: BaseCnpj[] = [];
+    let xbase = [];
+    setIsLoading(true);
+    const response = await api.get("/api/base");
+    xbase = await response.data.dados;
+    xbase.map((item: any) => {
+      cnpjs.push({
+        id: item.id.toString(),
+        cnpj: item.cnpj.toString(),
+      });
+    });
+    setDadosBase(cnpjs);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    showCnpjAll();
+  }, [dadosBase]);
+
   return (
     <>
-      <div className="flex flex-col min-w-full min-h-[calc(100vh-14.5rem)] bg-slate-700 p-4">
-        {isLoading && <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 z-50 flex justify-center items-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-        </div>}
-        <div className="flex min-w-screen h-24 bg-sky-600 px-4 py-6 mb-4 gap-5 items-center rounded-md ">
+      <div className="flex flex-col min-w-full lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative">
+        <Header>
           <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
             Selecionar um arquivo csv &#187;
           </label>
@@ -169,19 +190,17 @@ export default function Home() {
               Enviar Cnpj Individual
             </button>
           </div>
-        </div>
-
-
+        </Header>
         {visivel === 'tabcli' ? (
           <div className={`grid grid-cols-4 justify-items-center
-                         gap-4
+                         gap-4 
                          sm:grid-cols-1 md:grid-cols-1 
-                         lg:grid-cols-2 xl:grid-cols-4 
+                         lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-            <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
+            <div className="flex w-full">
               <TabelaCnpjBase base={dadosBase} />
             </div>
-            <div className="flex-initial col-span-3 w-full min-h-[calc(100vh-9.3rem)]">
+            <div className="flex flex-col col-span-3 w-full">
               <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
             </div>
           </div>
@@ -189,15 +208,12 @@ export default function Home() {
           <div className={`grid grid-cols-4 justify-items-center
                          gap-4
                          sm:grid-cols-1 md:grid-cols-1 
-                         lg:grid-cols-2 xl:grid-cols-4 
+                         lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-            <div className="flex-initial w-full min-h-[calc(100vh-9.3rem)]">
-              <div className="tableContainer">
-                <TabelaCnpjBase base={dadosBase} />
-              </div>
-
+            <div className="flex w-full">
+              <TabelaCnpjBase base={dadosBase} />
             </div>
-            <div className="flex flex-col col-span-3 w-full min-h-[calc(100vh-9.3rem)]">
+            <div className="flex flex-col col-span-3 w-full">
               <div className="tableContainer">
                 <FormularioDadosCliente clientes={cliente} onDetalhesCliente={detalhesDoCliente} onFechar={() => setVisivel('tabcli')} />
               </div>

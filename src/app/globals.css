@@ -47,7 +47,10 @@ body {
   max-height: 48rem;
   padding: 0.7rem;
   border: solid 1px #e2e8f0;
-  border-radius: 0.8rem;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0px;
   overflow-y: scroll;
 }
 
@@ -61,12 +64,12 @@ thead {
   margin: 0 0 0 0;
 }
 
-@media (min-width: 1400px) {
+@media (min-width: 1368px) {
   .tableContainer {
-    max-height: 64.5rem;
-    padding: 0.7rem;
+    max-height: 42rem;
     overflow-y: scroll;
     padding: 0.7rem;
+    background-color: #fff;
   }
 }
 th,

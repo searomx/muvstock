@@ -5,6 +5,15 @@ let token = [];
 
 /*Script para tratar o cnpj*/
 
+export const findCnpjAll = () => {
+  return prisma.base.findMany({
+    select: {
+      id: true,
+      cnpj: true,
+    },
+  });
+};
+
 export const findClienteBase = async () => {
   return prisma.unique
     .findMany({

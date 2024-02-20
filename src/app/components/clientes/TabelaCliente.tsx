@@ -52,9 +52,20 @@ export default function TabelaCliente(props: TabelaClienteProps) {
       </td>
     )
   }
+
+  /** .tableContainer {
+  max-height: 48rem;
+  padding: 0.7rem;
+  border: solid 1px #e2e8f0;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0px;
+  overflow-y: scroll;
+}**/
   return (
     <>
-      <div className="tableContainer">
+      <div className="2xl:max-h-[48rem] lg:max-h-[42rem] p-3 border-solid border-slate-300 rounded-tr-none rounded-tl-md rounded-bl-md rounded-br-none overflow-y-auto">
         <table className="min-w-full min-h-full">
           <thead className="bg-amber-500 p-4">
             {renderizarCabecalho()}

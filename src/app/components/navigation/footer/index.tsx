@@ -9,7 +9,7 @@ import { SocialIcons } from '../../SocialIcons';
 // Define the Footer component
 export default function Footer() {
   return (
-    <footer className='flex min-w-full p-4 bg-slate-200 justify-between rounded-b-sm'>
+    <footer className='flex min-w-full p-4 bg-orange-500 justify-between rounded-b-sm mt-auto sticky bottom-0'>
       <div>
         <p className='shadow-md shadow-zinc-700 p-2'>B4tech - Tecnology &copy; {new Date().getFullYear()}</p>
       </div>
