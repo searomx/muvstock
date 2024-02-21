@@ -29,28 +29,11 @@ export default function FormularioDadosCliente(props: FormularioDadosClienteProp
           'bg-gray-200' : 'bg-gray-400'}`}>{qsa.nome + " - " + qsa.qual}</li>
     )
   });
-
-
-
-  // const getAtvSecundaria = useCallback(async () => {
-  //   const atv = props?.clientes.atividades_secundarias;
-  //   for (let i = 0; i < atv.length; i++) {
-  //     itens.push(<li {i }>{atv[i].text + ' - ' + atv[i].code}</li>);
-  //     setAtvSecundaria(itens);
-  //   }
-  // }, [props?.clientes.atividades_secundarias, itens]);
-
-  // useEffect(() => {
-  //   getAtvSecundaria();
-  // }, [getAtvSecundaria]);
-
-
-
   return (
     <>
       <div className={`flex flex-col min-w-screen-md lg:min-h-full xl:min-h-full p-4 gap-4 bg-zinc-200 
-                      border border-zinc-400 rounded-md z-50 shadow-md`}>
-        <div className="flex flex-initial w-full p-4 relative">
+                      border border-zinc-400 rounded-md shadow-md`}>
+        <div className="flex w-full p-4 relative">
           <button onClick={props.onFechar} className={`flex items-center 
           justify-center rounded-lg 
           absolute right-0 -top-2 

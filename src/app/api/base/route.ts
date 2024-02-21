@@ -1,17 +1,16 @@
 import { findCnpjAll } from "@/lib/services";
 type TCnpj = {
-  id: string;
-  cnpj: string;
+  id: string | null;
+  cnpj: string | null;
 }
 
 export const GET = async (req: Request) => {
   try {
     const dados: TCnpj[] = await findCnpjAll();
-    if (dados.length > 0) {
-      console.log("Dados Routes: ", dados);
+    if (dados !== null) {
       return Response.json({ dados }, { status: 200 });
     } else {
-      return Response.json({ dados: "Nenhum dado encontrado!" }, { status: 400 });
+      return Response.json({ dados }, { status: 400 });
 
     }
   } catch (error) {

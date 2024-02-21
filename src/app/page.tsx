@@ -2,7 +2,7 @@
 import TabelaCliente from "./components/clientes/TabelaCliente";
 import TabelaCnpjBase from "./components/cnpj/TabelaCnpjBase";
 import FormularioDadosCliente from "./components/FormularioDadosCliente";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
@@ -23,16 +23,61 @@ export default function Home() {
   const [cliente, setCliente] = useState<Customer | null>(null);
   const [visivel, setVisivel] = useState<'tabcli' | 'formcli'>('tabcli');
   const [isLoading, setIsLoading] = useState(false);
+  const [idCnpj, setIdCnpj] = useState<string[]>([]);
 
   const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("");
 
+  let status: number = 0;
 
   const strtoken =
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IndvcmxkIiwibWVzc2FnZSI6IlRoYW5rcyBmb3IgdmlzaXRpbmcgbm96emxlZ2Vhci5jb20hIiwiaXNzdWVkIjoxNTU3MjU4ODc3NTI2fQ.NXd7lC3rFLiNHXwefUu3OQ-R203pGfB87-dIrk2S-vqfaygIWFwZKzmGHr6pzYkl2a0HkY0fdwa38yLWu8Zdhg";
-  async function getCNPJ() {
-    const token = "INFORME O SEU TOKEN DE ACESSO";
-  }
+  const statusRef = useRef<number>(0);
+
+  const headers = useMemo(() => {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+  }, []);
+
+  const getMensagemResponse = useCallback(async (resp: number, cnpj: string) => {
+    let resResp: number = resp;
+    console.log("resResp:", resResp);
+    let cnpjResp: string = cnpj;
+    if (resResp === 200) {
+      statusRef.current = resResp;
+      ShowToast.showToast("CNPJs Salvos com sucesso!", "success");
+    } else if (resResp === 201) {
+      ShowToast.showToast(`O CNPJ: ${cnpjResp} já existe na base de dados!`, "error");
+    }
+    return;
+  }, []);
+
+  const SaveAsCnpj = useCallback(async (cnpjs: BaseCnpj[]) => {
+    setIsLoading(true);
+    const result = await api.post("/api/base/1", cnpjs, {
+      headers,
+    }).then((response) => {
+      const resp = response.data;
+      if (response.status === 200) {
+        resp.map((item: any) => {
+          setIdCnpj(prevDados => [...prevDados, item.id]);
+          console.log("item-base:", item.id);
+        })
+      }
+      getMensagemResponse(response.status, response.data);
+      console.log("response-base:", response.status);
+      return response;
+    });
+    setIsLoading(false);
+    idCnpj.map((item: any) => {
+      console.log("item-id:", item);
+    });
+    return;
+  }, [getMensagemResponse, headers, idCnpj]);
+
+
 
   async function onEnviarToken() {
     if (inputToken.trim() === "") {
@@ -80,14 +125,14 @@ export default function Home() {
             cnpj: CompleteString.formatarPadString(item.cnpj.toString(), 14, "0"),
           }));
           setDadosBase(dadosCnpjs);
-          //SaveAsCnpj(dadosCnpjs);
+          SaveAsCnpj(dadosCnpjs);
         },
         error: (error) => {
           alert("Erro ao analisar o CSV: " + error.message);
         },
       });
     }
-  }, []);
+  }, [SaveAsCnpj]);
 
   useEffect(() => {
     handlerCnpjBase; // Pass the event argument to the function call
@@ -110,14 +155,6 @@ export default function Home() {
     setInputToken(strtoken);
   }, [inputToken]);
 
-  // const cnpjs = useMemo(() => {
-  //   return dadosBase.map((item) => {
-  //     return {
-  //       id: item.id,
-  //       cnpj: item.cnpj,
-  //     }
-  //   });
-  // }, [dadosBase]);
   function detalhesDoCliente(cliente: Customer) {
     setCliente(cliente);
     setVisivel('formcli');
@@ -129,21 +166,44 @@ export default function Home() {
     let cnpjs: BaseCnpj[] = [];
     let xbase = [];
     setIsLoading(true);
-    const response = await api.get("/api/base");
-    xbase = await response.data.dados;
-    xbase.map((item: any) => {
-      cnpjs.push({
-        id: item.id.toString(),
-        cnpj: item.cnpj.toString(),
-      });
+    await api.get("/api/base").then((res) => {
+      const data = res.data;
+      if (data.status === 200) {
+        xbase = data.dados;
+        xbase.map((item: any) => {
+          cnpjs.push({
+            id: item.id.toString(),
+            cnpj: item.cnpj.toString(),
+          });
+        });
+        setDadosBase(cnpjs);
+        setIsLoading(false);
+        return res;
+      } else {
+        ShowToast.showToast("Não existe registro na Base de Dados!", "error");
+      }
+    }).catch((error) => {
+      ShowToast.showToast("Erro ao buscar os dados na base de dados!", "error");
+      console.log(error);
+      return;
     });
-    setDadosBase(cnpjs);
-    setIsLoading(false);
+
   };
 
   useEffect(() => {
     showCnpjAll();
   }, [dadosBase]);
+
+  // const afterSomeTime = (time: any) =>
+  //   new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       resolve(true);
+  //     }, time);
+  //   });
+
+  // const callAfterSomeTime = async (callback: any, time: any) =>
+  //   afterSomeTime(time).then(() => callback());
+  // callAfterSomeTime(() => ShowToast.showToast("Eu chamo a cada 2 segundos", "success"), 2000);
 
   return (
     <>
