@@ -1,8 +1,7 @@
 import ShowInputForm from "./ShowInputForm";
 import { Customer } from "@prisma/client";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaWindowClose } from "react-icons/fa";
-import { PiAtFill } from "react-icons/pi";
+
 
 interface FormularioDadosClienteProps {
   clientes?: Customer;
@@ -36,12 +35,12 @@ export default function FormularioDadosCliente(props: FormularioDadosClienteProp
         <div className="flex w-full p-4 relative">
           <button onClick={props.onFechar} className={`flex items-center 
           justify-center rounded-lg 
-          absolute right-0 -top-2 
+          absolute right-0 top-2 
           w-7 h-7 `}>
             <FaWindowClose size={24} className="text-red-500" />
           </button>
         </div>
-        <div className="flex flex-col justify-start gap-2 flex-wrap p-2 border border-zinc-400 rounded-md">
+        <div className="flex flex-col justify-between items-center gap-2 flex-wrap p-2 border border-zinc-400 rounded-md">
           <span className="shadow-title font-semibold text-2xl">Dados Principais</span>
           <div className="flex justify-start gap-2 flex-wrap p-4 bg-slate-700 text-zinc-700 border border-zinc-400 rounded-md overflow-hidden">
             <ShowInputForm name="nome" className="text-white" tipo="text" texto="Nome:" tamanho={50} valor={props?.clientes.nome} />

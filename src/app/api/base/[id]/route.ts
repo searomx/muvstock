@@ -11,19 +11,12 @@ type TBasex = {
   cnpj?: string;
 }
 
-// export const GET = async (req: NextRequest, res: Response) => {
-//   const id: string = req.url.split("/base")[1] as string;
-//   const idx = id.split("=")[1];
-//   const dados = await findCnpjByIdBase(idx);
-//   return Response.json({ message: { dados } }, { status: 200 });
-// }
 export const GET = async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   try {
     if (id) {
       const dados = await findCnpjByIdBase(id);
-      console.log("cnpj-enviado: ", id);
       return Response.json({ dados }, { status: 200 });
     }
   } catch (error) {
@@ -33,7 +26,6 @@ export const GET = async (req: Request) => {
 }
 export async function POST(req: NextRequest, resp: NextResponse) {
   const cnpj: TBase[] = await req.json();
-  console.log("cnpj-router: ", cnpj);
   let cnpjValido: TBase[] = [] as TBase[];
   let cnpjInValido: TBasex[] = [] as TBasex[];
   if (cnpj) {

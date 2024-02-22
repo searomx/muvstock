@@ -1,11 +1,11 @@
 
 interface ShowDataFormProps {
   tipo: 'text' | 'number' | 'date' | 'password';
-  texto: string;
+  texto: string | '';
   name?: string;
   alinhaTexto?: 'left' | 'center' | 'right';
   corTexto?: string;
-  valor?: any;
+  valor?: any | '';
   somenteLeitura?: boolean;
   className?: string;
   tamanho?: number;
@@ -22,10 +22,10 @@ export default function ShowDataForm({ tipo, texto, name, corTexto, alinhaTexto,
       </label>
       <input
         type={tipo}
-        name={name}
-        value={valor}
-        readOnly={somenteLeitura}
-        size={tamanho}
+        name={name ?? ''}
+        value={valor ?? ''}
+        readOnly={somenteLeitura ?? false}
+        size={tamanho ?? 10}
         style={{ textAlign: alinhamento, color: corDoTexto }}
         onChange={e => onChange?.(e.target.value)}
         className={`border border-gray-400

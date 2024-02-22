@@ -2,19 +2,40 @@
 import TabelaCliente from "./components/clientes/TabelaCliente";
 import TabelaCnpjBase from "./components/cnpj/TabelaCnpjBase";
 import FormularioDadosCliente from "./components/FormularioDadosCliente";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useReducer } from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
 import CompleteString from "@/lib/utils/CompleteString";
 import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
-import TableBaseCnpj from "./components/cnpj/TableBaseCnpj";
 import Header from "./components/navigation/navbar/header";
+import AbortController from 'abort-controller';
 
 type BaseCnpj = {
   id: string;
   cnpj: string;
+}
+
+type TClientes = {
+  id: string;
+  nome: string;
+  cnpj: string;
+  municipio: string;
+  uf: string;
+}
+const initialState: TClientes[] = []
+type Action = | { type: "complete", payload: TClientes[] }
+
+function reducer(state: TClientes[], action: Action): TClientes[] {
+  switch (action.type) {
+    case "complete":
+      console.log(action.payload);
+      return action.payload;
+    default:
+      return state;
+  }
+
 }
 
 export default function Home() {
@@ -27,57 +48,44 @@ export default function Home() {
 
   const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("");
-
-  let status: number = 0;
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const strtoken =
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IndvcmxkIiwibWVzc2FnZSI6IlRoYW5rcyBmb3IgdmlzaXRpbmcgbm96emxlZ2Vhci5jb20hIiwiaXNzdWVkIjoxNTU3MjU4ODc3NTI2fQ.NXd7lC3rFLiNHXwefUu3OQ-R203pGfB87-dIrk2S-vqfaygIWFwZKzmGHr6pzYkl2a0HkY0fdwa38yLWu8Zdhg";
   const statusRef = useRef<number>(0);
 
-  const headers = useMemo(() => {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-  }, []);
 
-  const getMensagemResponse = useCallback(async (resp: number, cnpj: string) => {
-    let resResp: number = resp;
-    console.log("resResp:", resResp);
-    let cnpjResp: string = cnpj;
-    if (resResp === 200) {
-      statusRef.current = resResp;
-      ShowToast.showToast("CNPJs Salvos com sucesso!", "success");
-    } else if (resResp === 201) {
-      ShowToast.showToast(`O CNPJ: ${cnpjResp} já existe na base de dados!`, "error");
-    }
-    return;
-  }, []);
+  const afterSomeTime = (time: any) =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, time);
+    });
 
-  const SaveAsCnpj = useCallback(async (cnpjs: BaseCnpj[]) => {
+  const callAfterSomeTime = useCallback(async (callback: any, time: any) =>
+    afterSomeTime(time).then(() => callback())
+    , []);
+
+  const SaveAsCnpj = async (cnpjs: BaseCnpj[]) => {
     setIsLoading(true);
-    const result = await api.post("/api/base/1", cnpjs, {
-      headers,
+    await api.post("/api/base/1", cnpjs, {
     }).then((response) => {
-      const resp = response.data;
       if (response.status === 200) {
-        resp.map((item: any) => {
-          setIdCnpj(prevDados => [...prevDados, item.id]);
-          console.log("item-base:", item.id);
-        })
+        showCnpjAll();
+
+        // resp.map((item: any) => {
+        //   setIdCnpj(prevDados => [...prevDados, item.id]);
+        // });
       }
-      getMensagemResponse(response.status, response.data);
-      console.log("response-base:", response.status);
+      getMensagemResponse(response.status, response.data.cnpj);
       return response;
     });
     setIsLoading(false);
-    idCnpj.map((item: any) => {
-      console.log("item-id:", item);
-    });
+    // idCnpj.map((item: any) => {
+    //   console.log("item-id:", item);
+    // });
     return;
-  }, [getMensagemResponse, headers, idCnpj]);
-
-
+  }
 
   async function onEnviarToken() {
     if (inputToken.trim() === "") {
@@ -108,10 +116,11 @@ export default function Home() {
     }
   }
 
-  const handlerCnpjBase = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlerCnpjBase = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     let cnpjs: BaseCnpj[] = [];
     let dadosCnpjs: BaseCnpj[] = [];
+    let status: number = 0;
     const arquivo = e.target.files && e.target.files[0];
     if (arquivo) {
       Papa.parse(arquivo, {
@@ -124,32 +133,31 @@ export default function Home() {
             id: item.id,
             cnpj: CompleteString.formatarPadString(item.cnpj.toString(), 14, "0"),
           }));
-          setDadosBase(dadosCnpjs);
+          // setDadosBase(dadosCnpjs);
           SaveAsCnpj(dadosCnpjs);
+
         },
         error: (error) => {
-          alert("Erro ao analisar o CSV: " + error.message);
+          getMensagemResponse(status);
         },
       });
+
+
+      // callAfterSomeTime(() => showCnpjAll(), 2000);
     }
-  }, [SaveAsCnpj]);
+  };
+
 
   useEffect(() => {
-    handlerCnpjBase; // Pass the event argument to the function call
-  }, [handlerCnpjBase, dadosBase]);
+    const showDataClienteAll = async () => {
+      setIsLoading(true);
+      const response = await api.get("/api/cliente");
+      setClientes(response.data);
+      setIsLoading(false);
+    };
 
-  // ...
-
-  const showDataClienteAll = useCallback(async () => {
-    setIsLoading(true);
-    const response = await api.get("/api/cliente");
-    setClientes(response.data);
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
     showDataClienteAll();
-  }, [showDataClienteAll]);
+  }, [clientes]);
 
   useEffect(() => {
     setInputToken(strtoken);
@@ -161,49 +169,68 @@ export default function Home() {
   }
 
   //busca dados cnpj Base mongodb
+  const getMensagemResponse = useCallback(async (resp: number = 0, cnpj?: string) => {
+    let resResp: number = resp;
+    let cnpjResp: string = cnpj;
+    switch (resResp) {
+      case 200:
+        statusRef.current = resResp;
+        ShowToast.showToast("CNPJs Salvos com sucesso!", "success");
+        break;
+      case 201:
+        ShowToast.showToast(`O CNPJ: ${cnpjResp} já existe na base de dados!`, "error");
+        break;
+      case 404:
+        ShowToast.showToast("Não foram encontrados registros na base de dados!", "error");
+        break;
+      case 500:
+        ShowToast.showToast("Ocorreu erro no servidor!", "error");
+        break;
+      default:
+        ShowToast.showToast("Erro ao salvar os dados!", "error");
+        break;
+    }
+  }, []);
 
-  const showCnpjAll = async () => {
+  const showCnpjAll = useCallback(async () => {
     let cnpjs: BaseCnpj[] = [];
     let xbase = [];
+    let status: number = 0;
     setIsLoading(true);
-    await api.get("/api/base").then((res) => {
-      const data = res.data;
-      if (data.status === 200) {
-        xbase = data.dados;
-        xbase.map((item: any) => {
-          cnpjs.push({
-            id: item.id.toString(),
-            cnpj: item.cnpj.toString(),
-          });
-        });
-        setDadosBase(cnpjs);
-        setIsLoading(false);
-        return res;
-      } else {
-        ShowToast.showToast("Não existe registro na Base de Dados!", "error");
-      }
-    }).catch((error) => {
-      ShowToast.showToast("Erro ao buscar os dados na base de dados!", "error");
-      console.log(error);
-      return;
-    });
+    try {
+      await api.get("/api/base").then((response) => {
+        const data = response.data;
+        status = response.status;
+        if (response.status === 200) {
+          xbase = data.dados as BaseCnpj[];
+          // xbase.map((item: any) => {
+          //   cnpjs.push({
+          //     id: item.id.toString(),
+          //     cnpj: item.cnpj.toString(),
+          //   });
+          // });
+          setDadosBase(xbase);
 
-  };
+          setIsLoading(false);
+          return response;
+        } else {
+          getMensagemResponse(status);
+          return;
+        }
+      }).catch((error) => {
+        getMensagemResponse(status);
+        return;
+      });
+
+    } catch (error) {
+      getMensagemResponse(status);
+      return;
+    }
+  }, [getMensagemResponse]);
 
   useEffect(() => {
     showCnpjAll();
-  }, [dadosBase]);
-
-  // const afterSomeTime = (time: any) =>
-  //   new Promise((resolve) => {
-  //     setTimeout(() => {
-  //       resolve(true);
-  //     }, time);
-  //   });
-
-  // const callAfterSomeTime = async (callback: any, time: any) =>
-  //   afterSomeTime(time).then(() => callback());
-  // callAfterSomeTime(() => ShowToast.showToast("Eu chamo a cada 2 segundos", "success"), 2000);
+  }, [showCnpjAll]);
 
   return (
     <>
@@ -287,3 +314,4 @@ export default function Home() {
     </>
   );
 }
+

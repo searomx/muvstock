@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { api } from "@/lib/api";
+import { deleteCnpjById } from "@/lib/services";
 
 interface ParamsCnpjProps {
   cnpj: string;
@@ -45,9 +46,10 @@ type Idados = {
 
 export async function POST(req: NextRequest, resp: NextResponse) {
   //const controller = new AbortController();
+
   const { cnpj } = await req.json();
+  console.log("cnpj enviado:", cnpj);
   try {
-    console.log("cnpj-router: ", cnpj);
     if (cnpj) {
       const res = await prisma.customer.findFirst({
         where: {
@@ -60,6 +62,17 @@ export async function POST(req: NextRequest, resp: NextResponse) {
     }
   } catch (error) {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
+  }
+}
+
+const excluirCnpj = async (id: string) => {
+  try {
+    const res = await deleteCnpjById(id);
+    if (res) {
+      return NextResponse.json({ message: "CNPJ excluído com sucesso!" }, { status: 200 });
+    }
+  } catch (error) {
+    return NextResponse.json({ message: "Erro ao excluir CNPJ!" }, { status: 500 });
   }
 }
 
@@ -98,9 +111,12 @@ const obterDados = async (cnpj: string) => {
         qsa: json.qsa,
       },
     });
+    console.log("idExcluido: ", dados.id);
+    excluirCnpj(dados.id);
     return NextResponse.json({ message: "dados do Cliente:", dados }, { status: 200 });
   } catch (error) {
     console.log("Ocorreu o erro: ", error);
     controller.abort();
   }
 };
+

@@ -5,14 +5,15 @@ let token = [];
 
 /*Script para tratar o cnpj*/
 
-export const findCnpjAll = () => {
-  return prisma.base.findMany({
+export const findCnpjAll = async () => {
+  const res = await prisma.base.findMany({
     select: {
       id: true,
       cnpj: true,
     },
   });
-};
+  return res;
+}
 
 export const findClienteBase = async () => {
   return prisma.unique
@@ -145,14 +146,21 @@ export const updateById = (id: string) => {
   }
 };
 
-export const deleteById = (id: string) => {
+export const deleteCnpjById = (id: string) => {
   try {
-    const dados = prisma.customer.findUnique({
+    const dados = prisma.base.findUnique({
       where: {
         id,
       },
     });
     return dados.then((res) => {
+      if (res) {
+        return prisma.base.delete({
+          where: {
+            id,
+          },
+        });
+      }
       return res;
     });
   } catch (error) {
