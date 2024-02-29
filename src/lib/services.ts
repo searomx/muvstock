@@ -1,9 +1,23 @@
 import prisma from "@/lib/db";
+import { NextResponse } from "next/server";
 
 const customer = prisma?.customer.fields;
 let token = [];
 
 /*Script para tratar o cnpj*/
+
+export const criarBaseCnpj = async (cnpj: string) => {
+  const res = await prisma.base.create({
+    data: {
+      cnpj: cnpj,
+    },
+  }).then((res) => {
+    return NextResponse.json({ res }, { status: 201 });
+  }).catch((err) => {
+    console.log(err);
+    return NextResponse.json({ err }, { status: 500 });
+  });
+}
 
 export const findCnpjAll = async () => {
   const res = await prisma.base.findMany({
@@ -127,7 +141,6 @@ export const getById = (id: string) => {
 };
 
 export const updateById = (id: string) => {
-  console.log("id-serviço: ", id);
   try {
     const dados = prisma.customer.findUnique({
       where: {
@@ -146,24 +159,24 @@ export const updateById = (id: string) => {
   }
 };
 
-export const deleteCnpjById = (id: string) => {
+export const deleteCnpjById = async (id: string) => {
   try {
-    const dados = prisma.base.findUnique({
+    const dados = await prisma.base.findUnique({
       where: {
         id,
       },
+    }).then(async (res) => {
+      return await prisma.base.delete({
+        where: { id },
+      });
     });
-    return dados.then((res) => {
-      if (res) {
-        return prisma.base.delete({
-          where: {
-            id,
-          },
-        });
-      }
-      return res;
-    });
+    return dados;
   } catch (error) {
     console.log(error);
   }
 };
+
+/*const post = await prisma.post.delete({
+    where: { id },
+  })
+  res.json(post)*/

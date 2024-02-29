@@ -63,7 +63,7 @@ export const POST = async (req: Request, res: Response) => {
         uf,
       },
     });
-    return NextResponse.json({ message: "dados:", cliente }, { status: 201 });
+    return NextResponse.json({ message: "dados:", cliente }, { status: 200 });
   } catch (error) {
     console.log("O erro é: ", error);
   }

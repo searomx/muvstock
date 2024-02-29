@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { api } from "@/lib/api";
 import { deleteCnpjById } from "@/lib/services";
+import { cnpjMask } from "@/lib/utils/cnpjMask";
 
 interface ParamsCnpjProps {
   cnpj: string;
 }
-type Idados = {
+type TDadosCustomer = {
   nome: string;
   cnpj: string;
   abertura: string;
@@ -35,8 +36,8 @@ type Idados = {
   ];
   qsa: [
     {
-      qual: string;
       nome: string;
+      qual: string;
       pais_origem: string;
       nome_rep_legal: string;
       qual_rep_legal: string;
@@ -46,51 +47,46 @@ type Idados = {
 
 export async function POST(req: NextRequest, resp: NextResponse) {
   //const controller = new AbortController();
-
   const { cnpj } = await req.json();
-  console.log("cnpj enviado:", cnpj);
+  const xcnpj: string = cnpjMask(cnpj);
   try {
     if (cnpj) {
-      const res = await prisma.customer.findFirst({
+      const resultado = await prisma.customer.findFirst({
         where: {
-          cnpj: cnpj,
+          cnpj: xcnpj,
         },
       });
-      obterDados(cnpj);
+      if (!resultado) {
+
+        const result: TDadosCustomer[] = await obterDados(cnpj);
+        console.log("Resultado: ", result);
+        return NextResponse.json({ result }, { status: 200 });
+
+      } else {
+        return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} já está cadastrado` }, { status: 201 });
+      }
+
     } else {
-      return NextResponse.json({ message: "CNPJ Já está cadastrado!" }, { status: 200 });
+      NextResponse.json({ message: "Não foi enviado nenhum cnpj!" }, { status: 404 });
     }
   } catch (error) {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
   }
+  return;
 }
 
-const excluirCnpj = async (id: string) => {
+const obterDados = async (cnpjValue: string) => {
   try {
-    const res = await deleteCnpjById(id);
-    if (res) {
-      return NextResponse.json({ message: "CNPJ excluído com sucesso!" }, { status: 200 });
-    }
-  } catch (error) {
-    return NextResponse.json({ message: "Erro ao excluir CNPJ!" }, { status: 500 });
-  }
-}
-
-const obterDados = async (cnpj: string) => {
-  const controller = new AbortController();
-  const signal = controller.signal;
-  console.log("cnpj-obter: ", cnpj);
-  try {
-    const resultado = await api.get(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`, {
+    const response = await fetch(
+      `https://www.receitaws.com.br/v1/cnpj/${cnpjValue}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      signal,
-    });
-    const json: Idados = await resultado.data;
-    console.log("json: ", json);
-    const dados = await prisma.customer.create({
+    }
+    );
+    const json: TDadosCustomer = await response.json();
+    const dados: TDadosCustomer = await prisma.customer.create({
       data: {
         cnpj: json.cnpj,
         nome: json.nome,
@@ -110,13 +106,37 @@ const obterDados = async (cnpj: string) => {
         atividades_secundarias: json.atividades_secundarias,
         qsa: json.qsa,
       },
+    }).then((res) => {
+      return res;
+    }).catch((error) => {
+      return error;
     });
-    console.log("idExcluido: ", dados.id);
-    excluirCnpj(dados.id);
-    return NextResponse.json({ message: "dados do Cliente:", dados }, { status: 200 });
+    console.log("Dados-x: ", dados);
+    return dados;
   } catch (error) {
     console.log("Ocorreu o erro: ", error);
-    controller.abort();
+    return error;
   }
 };
+//excluir cnpj da base
 
+export async function DELETE(req: NextRequest, resp: NextResponse) {
+  const { id } = await req.json();
+  try {
+    if (id) {
+      const resultado = await prisma.base.delete({
+        where: {
+          id,
+        },
+      });
+      if (resultado) {
+        return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} foi excluído` }, { status: 200 });
+      }
+    } else {
+      NextResponse.json({ message: "Não foi enviado nenhum cnpj!" }, { status: 404 });
+    }
+  } catch (error) {
+    return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
+  }
+  return NextResponse.json({ message: "OK--Deletou" }, { status: 200 });
+}

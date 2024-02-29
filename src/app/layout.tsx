@@ -6,7 +6,6 @@ import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,6 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+
     <html lang="pt-br">
       <body className={`flex flex-col min-h-screen ${inter.className}`}>
         <Navigation />
@@ -30,6 +30,7 @@ export default function RootLayout({
         <Footer />
       </body>
     </html>
+
   );
 }
 

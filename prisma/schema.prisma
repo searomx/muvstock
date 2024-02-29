@@ -105,7 +105,7 @@ type Qsa {
 
 
 model Base {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
   cnpj                String?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt

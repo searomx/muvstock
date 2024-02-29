@@ -1,6 +1,6 @@
 
 type BaseCnpj = {
-  id: string;
+  id?: string;
   cnpj: string;
 }
 interface TabelaCnpjBaseProps {
@@ -18,9 +18,9 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
     )
   }
   function renderizarDados() {
-    return props.base?.map((item, i) => {
+    return props.base?.map((item, index) => {
       return (
-        <tr key={item.id} className={`${i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}`}>
+        <tr key={item.id} className={`${index % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}`}>
           <td className="text-left p-4 w-16">{item.id}</td>
           <td className="text-left p-4">{item.cnpj}</td>
         </tr>
@@ -30,7 +30,11 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
 
   return (
     <>
-      <div className="flex w-full 2xl:max-h-[48rem] lg:max-h-[42rem] p-3 border-solid border-slate-300 rounded-tr-none rounded-tl-md rounded-bl-md rounded-br-none overflow-y-auto">
+      <div className={`flex w-full 2xl:max-h-[48rem] 
+      lg:max-h-[42rem] pt-0 pb-3 
+      px-1 border-solid border-slate-300 
+      rounded-tr-none rounded-tl-md 
+      rounded-bl-md rounded-br-none overflow-y-auto`}>
         <table className="w-full">
           <thead className="bg-amber-500 p-4">
             {renderizarCabecalho()}

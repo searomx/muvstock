@@ -5,7 +5,7 @@ import { findCnpjByIdBase } from "@/lib/services";
 interface ParamsCnpjProps {
   cnpj: string;
 }
-type Idados = {
+type TdadosCustomer = {
   nome: string;
   cnpj: string;
   abertura: string;
@@ -32,6 +32,15 @@ type Idados = {
       code: string;
     }
   ];
+  qsa: [
+    {
+      nome: string;
+      qual: string;
+      pais_origem: string;
+      nome_rep_legal: string;
+      qual_rep_legal: string;
+    }
+  ];
 };
 
 export const POST = async (req: Request, res: Response) => {
@@ -49,7 +58,7 @@ export const POST = async (req: Request, res: Response) => {
       const response = await fetch(
         `https://www.receitaws.com.br/v1/cnpj/${cnpjLimpo}`
       );
-      const json = await response.json();
+      const json: TdadosCustomer = await response.json();
       console.log("json: ", json);
       try {
         const dados = await prisma.customer.create({

@@ -54,7 +54,7 @@ export default function TabelaCliente(props: TabelaClienteProps) {
   }
   return (
     <>
-      <div className="2xl:max-h-[48rem] lg:max-h-[42rem] p-3 border-solid border-slate-300 rounded-tr-none rounded-tl-md rounded-bl-md rounded-br-none overflow-y-auto">
+      <div className="2xl:max-h-[48rem] lg:max-h-[42rem] pt-0 pb-3 px-1 border-solid border-slate-300 rounded-tr-none rounded-tl-md rounded-bl-md rounded-br-none overflow-y-auto">
         <table className="min-w-full min-h-full">
           <thead className="bg-amber-500 p-4">
             {renderizarCabecalho()}
