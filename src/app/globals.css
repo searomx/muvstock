@@ -17,7 +17,7 @@
 }
 * {
   font-family: "Roboto", "Inter", "Poppins", sans-serif;
-  font-size: small;
+  font-size: 1rem;
   line-height: 1.218;
   outline: none;
   margin: 0;
@@ -40,7 +40,6 @@ body {
   padding: 0;
   box-sizing: border-box;
   font-family: "Roboto", Verdana, Geneva, Tahoma, sans-serif;
-  box-sizing: border-box;
 }
 
 .tableContainer {

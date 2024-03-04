@@ -12,6 +12,8 @@ import ShowToast from "@/lib/utils/showToast";
 import Header from "./components/navigation/navbar/header";
 import Loading from "./loading";
 
+
+
 type BaseCnpj = {
   id?: string;
   cnpj: string;
@@ -26,13 +28,6 @@ type TClientes = {
   cnpj: string;
   municipio: string;
   uf: string;
-}
-
-type TMensagem = {
-  status: number;
-  texto?: string;
-  documento?: string;
-  tipo?: 'info' | 'success' | 'warning' | 'error' | 'default' | undefined;
 }
 
 const initialState: TBaseCnpj[] = [];
@@ -51,29 +46,23 @@ function reducer(state: TBaseCnpj[], action: Action) {
 
 }
 
-async function temporizador(time: number) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-}
 
 export default function Home() {
-
   const [clientes, setClientes] = useState<Customer[] | null>([]);
   const [cliente, setCliente] = useState<Customer | null>(null);
   const [visivel, setVisivel] = useState<'tabcli' | 'formcli'>('tabcli');
   const [state, dispatch] = useReducer(reducer, initialState);
-
   const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("");
   const [processando, setProcessando] = useState<boolean>(false);
-  const [idCnpj, setIdCnpj] = useState<string[]>([]);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  let intervalo: NodeJS.Timeout | null = null;
+  const [totalSegundos, setTotalSegundos] = useState<number>(2 * 60);
+  const minutos = Math.floor(totalSegundos / 60);
+  const segundos = totalSegundos % 60;
 
   const strtoken =
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IndvcmxkIiwibWVzc2FnZSI6IlRoYW5rcyBmb3IgdmlzaXRpbmcgbm96emxlZ2Vhci5jb20hIiwiaXNzdWVkIjoxNTU3MjU4ODc3NTI2fQ.NXd7lC3rFLiNHXwefUu3OQ-R203pGfB87-dIrk2S-vqfaygIWFwZKzmGHr6pzYkl2a0HkY0fdwa38yLWu8Zdhg";
-  const statusRef = useRef<number>(0);
 
   const cabecalho = useMemo(() => {
     return {
@@ -83,29 +72,11 @@ export default function Home() {
     };
   }, []);
 
-  const getMensagemResponse = useCallback(async (resp: number, cnpj: string) => {
-    let resResp: number = resp;
-    console.log("resResp:", resResp);
-    let cnpjResp: string = cnpj;
-    if (resResp === 200) {
-      statusRef.current = resResp;
-      ShowToast.showToast("CNPJs Salvos com sucesso!", "success");
-    } else if (resResp === 201) {
-      ShowToast.showToast(`O CNPJ: ${cnpjResp} já existe na base de dados!`, "error");
-    }
-    return;
-  }, []);
-
-  async function waitTime(time: number) {
-    await temporizador(time);
-
-  };
-
   const handlerCnpjBase = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     let cnpjs: BaseCnpj[] = [];
     let dadosCnpjs: BaseCnpj[] = [];
-    const arquivo = e.target.files && e.target.files[0];
+    const arquivo = e.target.files?.[0];
     if (arquivo) {
       setProcessando(true);
       Papa.parse(arquivo, {
@@ -138,7 +109,6 @@ export default function Home() {
         if (response.status === 200) {
           ShowToast.showToast("Dados Salvos com sucesso!", "success");
           console.log(JSON.stringify(response.data));
-          // dispatch({ type: "complete", payload: response.data });
         }
         setProcessando(false);
         return resp;
@@ -191,9 +161,24 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    showDataClienteAll();
-  }, [showDataClienteAll]);
+
+  const saveCustomer = useCallback(async (strCnpj: string, idCnpj?: string) => {
+    try {
+      const response = await api.post("/api/cnpj", { cnpj: strCnpj }, { headers: cabecalho });
+      if (response.status === 200) {
+        if (idCnpj) {
+          removeCnpjBase(idCnpj);
+          dispatch({ type: "remove", id: idCnpj });
+        }
+        ShowToast.showToast("Cliente Salvo com Sucesso!", "success");
+        setClientes([...clientes, response.data.result]);
+      } else if (response.status === 201) {
+        ShowToast.showToast(`O cnpj ${strCnpj} já existe na base de dados`, "error");
+      }
+    } catch (error) {
+      ShowToast.showToast(error.toString(), "error");
+    }
+  }, [cabecalho, removeCnpjBase, clientes]);
 
   const getDataCustomer = useCallback(async () => {
     if (inputCnpjUnico.trim() === "") {
@@ -202,42 +187,46 @@ export default function Home() {
         const strCnpj = ValidaCnpj(item.cnpj);
         const idCnpj = item.id;
         if (strCnpj) {
-          api.post("/api/cnpj", { cnpj: strCnpj }, { headers: cabecalho }).then((response) => {
-            if (response.status === 200) {
-              removeCnpjBase(idCnpj);
-              dispatch({ type: "remove", id: idCnpj });
-              ShowToast.showToast("Cliente Salvo com Sucesso!", "success");
-              setClientes([...clientes, response.data.result]);
-            }
-          });
+          saveCustomer(strCnpj, idCnpj);
         }
       });
     } else {
       const strCnpj = ValidaCnpj(inputCnpjUnico);
-      let status: number = 0;
       if (strCnpj) {
-        api.post("/api/cnpj", { cnpj: strCnpj }, { headers: cabecalho }).then((response) => {
-          status = response.status;
-          console.log(status);
-          if (status === 200) {
-            console.log("dados do cliente enviado input:", response.data.result);
-            ShowToast.showToast("Cliente Salvo com Sucesso!", "success");
-            setClientes([...clientes, response.data.result]);
-          } else if (status === 201) {
-            ShowToast.showToast(`O cnpj ${strCnpj} já existe na base de dados`, "error");
-          }
-        }).catch((error) => {
-          ShowToast.showToast(error.toString(), "error");
-        });
+        saveCustomer(strCnpj);
       }
     }
-  }, [cabecalho, state, removeCnpjBase, inputCnpjUnico, clientes]);
+  }, [inputCnpjUnico, state, saveCustomer]);
 
+  const startTemporizador = useCallback(async () => {
+    if (!isRunning) {
+      await getDataCustomer();
+    }
+    setIsRunning(true);
+
+    if (totalSegundos === 0) {
+      await getDataCustomer();
+      setTotalSegundos(120);
+    } else {
+      setTimeout(() => {
+        setTotalSegundos(totalSegundos - 1);
+      }, 1000);
+      setIsRunning(true);
+    }
+  }, [getDataCustomer, isRunning, totalSegundos]);
+
+
+  useEffect(() => {
+    if (isRunning) {
+      startTemporizador();
+    } else {
+      setTotalSegundos(120);
+    }
+
+  }, [totalSegundos, isRunning, startTemporizador]);
 
 
   // ...Mostrar os dados da Base Cnpj
-
-
 
   useEffect(() => {
     setInputToken(strtoken);
@@ -250,7 +239,7 @@ export default function Home() {
 
   //busca dados cnpj Base mongodb
 
-  const showCnpjAll = async () => {
+  const showCnpjAll = useCallback(async () => {
     let xbase: TBaseCnpj[] = [];
     setProcessando(true);
     await api.get("/api/base").then((res) => {
@@ -266,107 +255,110 @@ export default function Home() {
     }).catch((error) => {
       ShowToast.showToast("Erro ao buscar os dados na base de dados!", "error");
       console.log(error);
-      return;
+      setProcessando(false);
     });
 
-  };
+  }, []);
 
   useEffect(() => {
     showCnpjAll();
-  }, [state]);
+  }, [state, showCnpjAll]);
 
-  // const afterSomeTime = (time: any) =>
-  //   new Promise((resolve) => {
-  //     setTimeout(() => {
-  //       resolve(true);
-  //     }, time);
-  //   });
-
-  // const callAfterSomeTime = async (callback: any, time: any) =>
-  //   afterSomeTime(time).then(() => callback());
-  // callAfterSomeTime(() => ShowToast.showToast("Eu chamo a cada 2 segundos", "success"), 2000);
+  useEffect(() => {
+    showDataClienteAll();
+  }, [clientes, showDataClienteAll]);
 
   return (
-    <>
-      <Suspense fallback={<Loading />}>
-        <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative">
-          <Header>
-            <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
-              Selecionar um arquivo csv &#187;
-            </label>
+    <Suspense fallback={<Loading />}>
+      <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative">
+        <Header>
+          <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
+            Selecionar um arquivo csv &#187;
+          </label>
+          <input
+            id="selecao-arquivo"
+            accept=".csv"
+            type="file"
+            onChange={handlerCnpjBase} />
+
+          <div className="flex h-[5rem] bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
+            <textarea
+              id="token"
+              name="token"
+              style={{ resize: "none" }}
+              cols={40}
+              rows={3}
+              placeholder="Insira o Token..."
+              value={inputToken}
+              onChange={(e) => setInputToken(e.target.value)}
+              className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
+            ></textarea>
+            <button onClick={onEnviarToken} className="botao botao-blue ml-3">
+              Enviar Token
+            </button>
+          </div>
+          <div className="flex h-[5rem] bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
             <input
-              id="selecao-arquivo"
-              accept=".csv"
-              type="file"
-              onChange={handlerCnpjBase} />
+              type="text"
+              onChange={(e) => setCnpjUnico(e.target.value)}
+              value={inputCnpjUnico}
+              className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
+              placeholder="Digite o Cnpj..."
+            />
+            <button
+              id="btn-enviar-individual"
+              onClick={() => startTemporizador()}
+              className="botao botao-blue ml-3"
+            >
+              Enviar Cnpj
+            </button>
+            <button
+              id="btn-stop"
+              onClick={() => startTemporizador()}
+              className="botao botao-blue ml-3"
+            >
+              Interromper
+            </button>
+          </div>
+          <div className="flex h-[5rem] w-auto bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
 
-            <div className="flex bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
-              <textarea
-                id="token"
-                name="token"
-                style={{ resize: "none" }}
-                cols={40}
-                rows={3}
-                placeholder="Insira o Token..."
-                value={inputToken}
-                onChange={(e) => setInputToken(e.target.value)}
-                className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
-              ></textarea>
-              <button onClick={onEnviarToken} className="botao botao-blue ml-3">
-                Enviar Token
-              </button>
-            </div>
-            <div className="flex bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 justify-center items-center">
-              <input
-                type="text"
-                onChange={(e) => setCnpjUnico(e.target.value)}
-                value={inputCnpjUnico}
-                className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
-                placeholder="Digite o Cnpj..."
-              />
-              <button
-                id="btn-enviar-individual"
-                onClick={getDataCustomer}
-                className="botao botao-blue ml-3"
-              >
-                Enviar Cnpj Individual
-              </button>
-            </div>
-          </Header>
+            <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
 
-          {visivel === 'tabcli' ? (
-            <div className={`grid grid-cols-4 justify-items-center
+          </div>
+        </Header>
+
+        {visivel === 'tabcli' ? (
+          <div className={`grid grid-cols-4 justify-items-center
                          gap-4 
                          sm:grid-cols-1 md:grid-cols-1 
                          lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-              <div className="flex w-full">
-                <TabelaCnpjBase base={state ? state : null} />
-              </div>
-              <div className="flex flex-col col-span-3 w-full">
-                <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
-              </div>
+            <div className="flex w-full">
+              <TabelaCnpjBase base={state || null} />
             </div>
-          ) : (
-            <div className={`grid grid-cols-4 justify-items-center
+            <div className="flex flex-col col-span-3 w-full">
+              <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
+            </div>
+          </div>
+        ) : (
+          <div className={`grid grid-cols-4 justify-items-center
                          gap-4
                          sm:grid-cols-1 md:grid-cols-1 
                          lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-              <div className="flex w-full p-3">
-                <TabelaCnpjBase base={state} />
-              </div>
-              <div className="flex flex-col col-span-3 w-full">
-                <div className="tableContainer">
-                  <FormularioDadosCliente clientes={cliente} onDetalhesCliente={detalhesDoCliente} onFechar={() => setVisivel('tabcli')} />
-                </div>
-
+            <div className="flex w-full p-3">
+              <TabelaCnpjBase base={state} />
+            </div>
+            <div className="flex flex-col col-span-3 w-full">
+              <div className="tableContainer">
+                <FormularioDadosCliente clientes={cliente} onDetalhesCliente={detalhesDoCliente} onFechar={() => setVisivel('tabcli')} />
               </div>
 
             </div>
-          )}
-        </div >
-      </Suspense>
-    </>
+
+          </div>
+        )}
+      </div >
+    </Suspense>
   );
 }
