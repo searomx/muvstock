@@ -13,6 +13,7 @@ import Header from "./components/navigation/navbar/header";
 import Loading from "./loading";
 import TableClientes from "./components/clientes/TableClientes";
 import TableCnpjBase from "./components/cnpj/TableCnpjBase";
+import ClientesTable from "./components/clientes/ClientesTable";
 type BaseCnpj = {
   id?: string;
   cnpj: string;
@@ -337,8 +338,8 @@ export default function Home() {
             <div className="flex w-full text-sm">
               <TableCnpjBase data={state || null} />
             </div>
-            <div className="flex flex-col col-span-3 w-full">
-              <TableClientes data={clientes} onDetalhesCliente={detalhesDoCliente} />
+            <div className="flex flex-col col-span-3 w-full max-h-[48rem]">
+              <ClientesTable data={clientes} onDetalhesCliente={detalhesDoCliente} />
             </div>
           </div>
         ) : (

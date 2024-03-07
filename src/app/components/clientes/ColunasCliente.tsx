@@ -8,7 +8,7 @@ const ColunasCliente = [
   },
   {
     accessorKey: 'situacao',
-    size: 50,
+    size: 10,
     header: 'Situação',
   },
   {

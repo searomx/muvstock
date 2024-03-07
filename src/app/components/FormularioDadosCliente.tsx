@@ -14,6 +14,7 @@ type AtividadesSecundarias = {
 }
 
 export default function FormularioDadosCliente(props: FormularioDadosClienteProps) {
+  console.log(props.clientes);
   const listaAtvSecundaria = props?.clientes.atividades_secundarias.map((atv, index) => {
     return (
       <li key={index} className={`text-xl px-2 py-1 

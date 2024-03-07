@@ -3,29 +3,23 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
   type MRT_ColumnDef,
-  type MRT_ColumnFiltersState,
-  type MRT_PaginationState,
-  type MRT_SortingState,
+  MRT_ColumnFiltersState,
+  MRT_SortingState,
+  MRT_PaginationState,
 } from 'material-react-table';
-
-import {
-  MenuItem,
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { Customer } from '@prisma/client';
-import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 import ColunasCliente from './ColunasCliente';
+import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 
-interface TableClientesProps {
+
+interface ClientesTableProps {
   data: Customer[];
   onDetalhesCliente?: (cliente: Customer) => void;
 }
 
-const TableClientes = (props: TableClientesProps) => {
+const ClientesTable = (props: ClientesTableProps) => {
   const { data } = props as { data: Customer[] };
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string | undefined>
-  >({});
-
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
@@ -42,36 +36,6 @@ const TableClientes = (props: TableClientesProps) => {
     pageSize: 10,
   });
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (!data.length) {
-  //       setIsLoading(true);
-  //     } else {
-  //       setIsRefetching(true);
-  //     }
-  //   };
-  //   try {
-  //     setRowCount(data.length);
-  //   } catch (error) {
-  //     setIsError(true);
-  //     console.error(error);
-  //     return;
-  //   }
-  //   setIsError(false);
-  //   setIsLoading(false);
-  //   setIsRefetching(false);
-
-  //   fetchData();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [
-  //   columnFilters, //re-fetch when column filters change
-  //   globalFilter, //re-fetch when global filter changes
-  //   pagination.pageIndex, //re-fetch when page index changes
-  //   pagination.pageSize, //re-fetch when page size changes
-  //   sorting, //re-fetch when sorting changes
-  // ]);
-
-
   const columns = useMemo<MRT_ColumnDef<Customer>[]>(
     () => ColunasCliente,
     [],
@@ -80,9 +44,43 @@ const TableClientes = (props: TableClientesProps) => {
   const table = useMaterialReactTable({
     columns,
     data,
+    onPaginationChange: setPagination,
+    state: { pagination },
     paginationDisplayMode: 'pages',
-    getRowId: (row) => row.id,
-    enableColumnFilterModes: true,
+    enableExpandAll: false, //disable expand all button
+    muiDetailPanelProps: () => ({
+      sx: (theme) => ({
+        backgroundColor:
+          theme.palette.mode === 'dark'
+            ? 'rgba(255,210,244,0.1)'
+            : 'rgba(0,0,0,0.1)',
+      }),
+    }),
+    //custom expand button rotation
+    muiExpandButtonProps: ({ row, table }) => ({
+      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
+      sx: {
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
+      },
+    }),
+    //conditionally render detail panel
+    renderDetailPanel: ({ row }) =>
+      row.original.nome ? (
+        <Box
+          sx={{
+            display: 'grid',
+            margin: 'auto',
+            gridTemplateColumns: '1fr 1fr',
+            width: '100%',
+          }}
+        >
+          <Typography>Cliente: {row.original.nome}</Typography>
+          <Typography>Cnpj: {row.original.cnpj}</Typography>
+          <Typography>Cidade: {row.original.municipio}</Typography>
+          <Typography>Estado: {row.original.uf}</Typography>
+        </Box>
+      ) : null,
     initialState: {
       showColumnFilters: true, showGlobalFilter: true, columnVisibility: {
         id: false,
@@ -123,16 +121,10 @@ const TableClientes = (props: TableClientesProps) => {
       showRowsPerPage: false,
       variant: 'outlined',
     },
-    onPaginationChange: setPagination,//hoist pagination state to your state when it changes internally
-    state: { pagination },
-    enableRowActions: true,
-    renderRowActionMenuItems: ({ row }) => [
-      <MenuItem key="edit" onClick={() => props.onDetalhesCliente?.(data as any)}>
-        Detalhes
-      </MenuItem>,
-    ],
-    enableHiding: false,
+
   });
+
   return <MaterialReactTable table={table} />;
 };
-export default TableClientes;
+
+export default ClientesTable;
