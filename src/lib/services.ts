@@ -30,7 +30,7 @@ export const findCnpjAll = async () => {
 }
 
 export const findClienteBase = async () => {
-  return prisma.unique
+  return await prisma.unique
     .findMany({
       orderBy: {
         cnpj: "asc",
@@ -57,7 +57,7 @@ export const findCnpjByIdBase = async (id: string) => {
 };
 
 export const findCliente = async () => {
-  return prisma.customer
+  return await prisma.customer
     .findMany({
       orderBy: {
         nome: "asc",
@@ -103,24 +103,22 @@ export const getToken = () => {
   });
 };
 
-export const getByCnpj = (cnpj: string) => {
+export const getByCnpj = async (cnpj: string) => {
   try {
-    const dados = prisma.customer.findFirst({
+    const dados = await prisma.customer.findFirst({
       where: {
         cnpj,
       },
     });
-    return dados.then((res) => {
-      return res;
-    });
+    return dados;
   } catch (error) {
     console.log(error);
   }
 };
 
-export const getById = (id: string) => {
+export const getById = async (id: string) => {
   try {
-    const dados = prisma.customer.findUnique({
+    const dados = await prisma.customer.findUnique({
       where: {
         id,
       },
@@ -132,17 +130,15 @@ export const getById = (id: string) => {
         uf: true,
       },
     });
-    return dados.then((res) => {
-      return res;
-    });
+    return dados;
   } catch (error) {
     console.log(error);
   }
 };
 
-export const updateById = (id: string) => {
+export const updateById = async (id: string) => {
   try {
-    const dados = prisma.customer.findUnique({
+    const dados = await prisma.customer.findUnique({
       where: {
         id,
       },
@@ -151,9 +147,7 @@ export const updateById = (id: string) => {
         nome: true,
       },
     });
-    return dados.then((res) => {
-      return res;
-    });
+    return dados;
   } catch (error) {
     console.log(error);
   }

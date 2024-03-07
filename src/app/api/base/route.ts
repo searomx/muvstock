@@ -34,8 +34,8 @@ export async function POST(req: NextRequest, resp: NextResponse) {
   let cnpjValido: TBase[] = [];
   let cnpjInValido: TBasex[] = [];
   if (cnpj) {
-    for (let i = 0; i < cnpj.length; i++) {
-      let cnpjx = cnpj[i].cnpj as TBase["cnpj"];
+    for (const item of cnpj) {
+      let cnpjx = item.cnpj;
       const res = await prisma.base.findFirst({
         where: {
           cnpj: cnpjx,
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, resp: NextResponse) {
             cnpj: cnpjx,
           },
         }).then((data) => {
-          cnpjValido.push({ id: data.id.toString(), cnpj: cnpj[i].toString() });
+          cnpjValido.push({ id: data.id.toString(), cnpj: cnpjx });
           return NextResponse.json(cnpjValido, { status: 200 });
         });
       } else {

@@ -16,9 +16,8 @@
   }
 }
 * {
-  font-family: "Roboto", "Inter", "Poppins", sans-serif;
-  font-size: 1rem;
-  line-height: 1.218;
+  font-family: "Roboto", "Verdana", "Inter", "Poppins", sans-serif, Geneva,
+    Tahoma;
   outline: none;
   margin: 0;
   padding: 0;
@@ -40,6 +39,7 @@ body {
   padding: 0;
   box-sizing: border-box;
   font-family: "Roboto", Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 85%;
 }
 
 .tableContainer {
@@ -69,6 +69,11 @@ thead {
     overflow-y: scroll;
     padding: 0.7rem;
     background-color: #fff;
+  }
+}
+@media (min-width: 1268px) {
+  body {
+    font-size: 0.75rem;
   }
 }
 th,

@@ -11,9 +11,8 @@ import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
 import Header from "./components/navigation/navbar/header";
 import Loading from "./loading";
-
-
-
+import TableClientes from "./components/clientes/TableClientes";
+import TableCnpjBase from "./components/cnpj/TableCnpjBase";
 type BaseCnpj = {
   id?: string;
   cnpj: string;
@@ -56,7 +55,6 @@ export default function Home() {
   const [inputToken, setInputToken] = useState<string>("");
   const [processando, setProcessando] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  let intervalo: NodeJS.Timeout | null = null;
   const [totalSegundos, setTotalSegundos] = useState<number>(2 * 60);
   const minutos = Math.floor(totalSegundos / 60);
   const segundos = totalSegundos % 60;
@@ -222,7 +220,6 @@ export default function Home() {
     } else {
       setTotalSegundos(120);
     }
-
   }, [totalSegundos, isRunning, startTemporizador]);
 
 
@@ -267,6 +264,10 @@ export default function Home() {
   useEffect(() => {
     showDataClienteAll();
   }, [clientes, showDataClienteAll]);
+
+  const stopRequestCnpj = () => {
+    setIsRunning(false);
+  };
 
   return (
     <Suspense fallback={<Loading />}>
@@ -314,7 +315,7 @@ export default function Home() {
             </button>
             <button
               id="btn-stop"
-              onClick={() => startTemporizador()}
+              onClick={() => stopRequestCnpj()}
               className="botao botao-blue ml-3"
             >
               Interromper
@@ -328,25 +329,25 @@ export default function Home() {
         </Header>
 
         {visivel === 'tabcli' ? (
-          <div className={`grid grid-cols-4 justify-items-center
+          <div className={`grid grid-cols-4
                          gap-4 
                          sm:grid-cols-1 md:grid-cols-1 
                          lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-            <div className="flex w-full">
-              <TabelaCnpjBase base={state || null} />
+            <div className="flex w-full text-sm">
+              <TableCnpjBase data={state || null} />
             </div>
             <div className="flex flex-col col-span-3 w-full">
-              <TabelaCliente clientes={clientes} onDetalhesCliente={detalhesDoCliente} />
+              <TableClientes data={clientes} onDetalhesCliente={detalhesDoCliente} />
             </div>
           </div>
         ) : (
-          <div className={`grid grid-cols-4 justify-items-center
+          <div className={`grid grid-cols-4
                          gap-4
                          sm:grid-cols-1 md:grid-cols-1 
                          lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
-            <div className="flex w-full p-3">
+            <div className="flex w-full text-sm p-3">
               <TabelaCnpjBase base={state} />
             </div>
             <div className="flex flex-col col-span-3 w-full">

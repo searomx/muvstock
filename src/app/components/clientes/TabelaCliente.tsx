@@ -1,13 +1,13 @@
-import Cliente from "@/core/Cliente";
 import { IconeDetalhes } from "../Icones";
 import { Customer } from "@prisma/client";
+
 
 interface TabelaClienteProps {
   clientes: Customer[];
   onDetalhesCliente?: (cliente: Customer) => void;
 }
 
-export default function TabelaCliente(props: TabelaClienteProps) {
+export default function TabelaCliente(props: Readonly<TabelaClienteProps>) {
   const exibirAcoes = props.onDetalhesCliente;
 
   function renderizarCabecalho() {
@@ -53,15 +53,25 @@ export default function TabelaCliente(props: TabelaClienteProps) {
     )
   }
   return (
-    <div className="2xl:max-h-[42rem] xl:max-h-[35rem] xl:text-xs pt-0 pb-3 px-1 border-solid border-slate-300 rounded-tr-none rounded-tl-md rounded-bl-md rounded-br-none overflow-y-auto">
-      <table className="min-w-full min-h-full xl:text-xs">
-        <thead className="bg-amber-500 p-4">
-          {renderizarCabecalho()}
-        </thead>
-        <tbody>
-          {renderizarDados()}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className={`2xl:max-h-[48rem] 
+                      xl:max-h-[38rem] xl:text-sm 
+                      pt-0 pb-3 px-1 border-solid border-slate-300 
+                      rounded-tr-none rounded-tl-md 
+                      rounded-bl-md rounded-br-none 
+                      overflow-y-auto`}>
+        <table className="min-w-full min-h-full xl:text-sm">
+          <thead className="bg-amber-500 p-4">
+            {renderizarCabecalho()}
+          </thead>
+          <tbody>
+            {renderizarDados()}
+          </tbody>
+        </table>
+      </div>
+      <div className="w-full h-10 bg-sky-500 p-2 rounded-md">
+        <p className="text-center text-white">Total de clientes: {props.clientes.length}</p>
+      </div>
+    </>
   )
 }

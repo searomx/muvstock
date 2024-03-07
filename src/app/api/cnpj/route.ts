@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { api } from "@/lib/api";
-import { deleteCnpjById } from "@/lib/services";
 import { cnpjMask } from "@/lib/utils/cnpjMask";
 
-interface ParamsCnpjProps {
-  cnpj: string;
-}
 type TDadosCustomer = {
   nome: string;
   cnpj: string;
@@ -46,7 +41,6 @@ type TDadosCustomer = {
 };
 
 export async function POST(req: NextRequest, resp: NextResponse) {
-  //const controller = new AbortController();
   const { cnpj } = await req.json();
   const xcnpj: string = cnpjMask(cnpj);
   try {
@@ -57,22 +51,17 @@ export async function POST(req: NextRequest, resp: NextResponse) {
         },
       });
       if (!resultado) {
-
         const result: TDadosCustomer[] = await obterDados(cnpj);
-        console.log("Resultado: ", result);
         return NextResponse.json({ result }, { status: 200 });
-
       } else {
         return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} já está cadastrado` }, { status: 201 });
       }
-
     } else {
       NextResponse.json({ message: "Não foi enviado nenhum cnpj!" }, { status: 404 });
     }
   } catch (error) {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
   }
-  return;
 }
 
 const obterDados = async (cnpjValue: string) => {
@@ -111,7 +100,6 @@ const obterDados = async (cnpjValue: string) => {
     }).catch((error) => {
       return error;
     });
-    console.log("Dados-x: ", dados);
     return dados;
   } catch (error) {
     console.log("Ocorreu o erro: ", error);

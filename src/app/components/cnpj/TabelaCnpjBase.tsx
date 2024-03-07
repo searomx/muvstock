@@ -29,12 +29,13 @@ export default function TabelaCnpjBase(props: TabelaCnpjBaseProps) {
   }
 
   return (
-    <div className={`flex w-full 2xl:max-h-[42rem] 
-      xl:max-h-[37rem] xl:text-xs pt-0 pb-3 
-      px-1 border-solid border-slate-300 
-      rounded-tr-none rounded-tl-md 
-      rounded-bl-md rounded-br-none overflow-y-auto`}>
-      <table className="min-w-full min-h-full xl:text-[0.750rem]">
+    <div className={`2xl:max-h-[48rem] xl:max-h-[38rem] min-w-full 
+    xl:text-sm pt-0 pb-3 px-1 
+    border-solid border-slate-300 
+    rounded-tr-none rounded-tl-md 
+    rounded-bl-md rounded-br-none 
+    overflow-auto`}>
+      <table className="min-w-full min-h-full xl:text-sm">
         <thead className="bg-amber-500 p-4">
           {renderizarCabecalho()}
         </thead>
