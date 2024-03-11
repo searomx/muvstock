@@ -52,9 +52,9 @@ const ColunasCliente = [
   //   header: 'Natureza',
   // },
   // {
-  //   accessorKey: 'atividade_secundaria',
-  //   valueFn: (row: { atividade_secundaria: any[]; }) => {
-  //     return row.atividade_secundaria.map((a: any) => a.text).join(', ');
+  //   accessorKey: 'atividades_secundarias',
+  //   valueFn: (row: { atividades_secundarias: any[]; }) => {
+  //     return row.atividades_secundarias.map((a: any) => a.text).join(', ');
   //   },
   //   size: 180,
   //   header: 'Natureza',

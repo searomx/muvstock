@@ -26,7 +26,7 @@ const Navbar = ({ toggle }: { toggle: () => void }) => {
               />
             </svg>
           </button>
-          {/* <ul className="hidden md:flex gap-x-6 text-white ">
+          <ul className="hidden md:flex gap-x-6 text-white ">
             <li>
               <Link href="/about">
                 <p>Nossa Empresa</p>
@@ -38,11 +38,11 @@ const Navbar = ({ toggle }: { toggle: () => void }) => {
               </Link>
             </li>
             <li>
-              <Link href="/contacts">
-                <p>Contato</p>
+              <Link href="/pages/maps">
+                <p>Mapa</p>
               </Link>
             </li>
-          </ul> */}
+          </ul>
           <div className="hidden md:block">
             <Button />
           </div>

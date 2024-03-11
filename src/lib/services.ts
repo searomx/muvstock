@@ -85,6 +85,9 @@ export async function deleteCnpj(id: string) {
 
 export const getAllClientes = () => {
   return prisma.customer.findMany({
+    where: {
+      situacao: "ATIVA",
+    },
     orderBy: {
       nome: "asc",
     },

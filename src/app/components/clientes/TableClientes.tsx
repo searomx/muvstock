@@ -80,12 +80,12 @@ const TableClientes = (props: TableClientesProps) => {
   const table = useMaterialReactTable({
     columns,
     data,
-    paginationDisplayMode: 'pages',
     getRowId: (row) => row.id,
     enableColumnFilterModes: true,
     initialState: {
       showColumnFilters: true, showGlobalFilter: true, columnVisibility: {
         id: false,
+        situacao: false,
         tipo: false,
         porte: false,
         natureza_juridica: false,
@@ -125,12 +125,8 @@ const TableClientes = (props: TableClientesProps) => {
     },
     onPaginationChange: setPagination,//hoist pagination state to your state when it changes internally
     state: { pagination },
+    paginationDisplayMode: 'pages',
     enableRowActions: true,
-    renderRowActionMenuItems: ({ row }) => [
-      <MenuItem key="edit" onClick={() => props.onDetalhesCliente?.(data as any)}>
-        Detalhes
-      </MenuItem>,
-    ],
     enableHiding: false,
   });
   return <MaterialReactTable table={table} />;

@@ -9,11 +9,11 @@ interface FormularioDadosClienteProps {
   onDetalhesCliente?: (cliente: Customer) => void;
 }
 type AtividadesSecundarias = {
-  code?: String;
-  text?: String
+  code?: string;
+  text?: string
 }
 
-export default function FormularioDadosCliente(props: FormularioDadosClienteProps) {
+export default function FormularioDadosCliente(props: Readonly<FormularioDadosClienteProps>) {
   console.log(props.clientes);
   const listaAtvSecundaria = props?.clientes.atividades_secundarias.map((atv, index) => {
     return (

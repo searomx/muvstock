@@ -339,7 +339,7 @@ export default function Home() {
               <TableCnpjBase data={state || null} />
             </div>
             <div className="flex flex-col col-span-3 w-full max-h-[48rem]">
-              <ClientesTable data={clientes} onDetalhesCliente={detalhesDoCliente} />
+              <ClientesTable data={clientes} />
             </div>
           </div>
         ) : (
