@@ -38,7 +38,7 @@ const Navbar = ({ toggle }: { toggle: () => void }) => {
               </Link>
             </li>
             <li>
-              <Link href="/pages/maps">
+              <Link className="cursor-pointer" href="/pages/maps">
                 <p>Mapa</p>
               </Link>
             </li>

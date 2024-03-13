@@ -9,11 +9,11 @@ import { Base } from '@prisma/client';
 import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 
 interface TableCnpjBaseProps {
-  data: any[];
+  data: any[] | null;
 }
 
 const TableCnpjBase = (props: TableCnpjBaseProps) => {
-  const { data } = props as { data: any };
+  const { data } = props as { data: any | null };
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
@@ -33,13 +33,12 @@ const TableCnpjBase = (props: TableCnpjBaseProps) => {
     ],
     [],
   );
-
   const table = useMaterialReactTable({
     columns,
     data,
     getRowId: (row) => row.id,
     enableColumnFilterModes: true, //enable changing filter mode for all columns unless explicitly disabled in a column def
-    initialState: { showColumnFilters: true }, //show filters by default
+    initialState: { showColumnFilters: true, density: 'compact' }, //show filters by default
     filterFns: {
       customFilterFn: (row, id, filterValue) => {
         return row.getValue(id) === filterValue;

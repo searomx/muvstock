@@ -5,6 +5,9 @@ import {
   type MRT_ColumnDef,
   MRT_PaginationState,
   MRT_Row,
+  type MRT_ColumnFiltersState,
+  type MRT_SortingState,
+  type MRT_RowVirtualizer,
 } from 'material-react-table';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
@@ -25,16 +28,7 @@ const csvConfig = mkConfig({
 
 export default function ClientesTable(props: Readonly<ClientesTableProps>) {
   const { data } = props as { data: Customer[] };
-  let atvPrincipal: string[] = [];
-
-  data.map((atv, index) => atvPrincipal.push(atv.atividade_principal[0].code, atv.atividade_principal[0].text));
-  console.log("dados Atividade Principal: ", atvPrincipal);
-
-  const handleExportRows = (rows: MRT_Row<Customer>[]) => {
-    const rowData = rows.map((row) => row.original);
-    const csv = generateCsv(csvConfig)(rowData);
-    download(csvConfig)(csv);
-  };
+  const [globalFilter, setGlobalFilter] = useState('');
 
   const handleExportData = () => {
     const csv = generateCsv(csvConfig)(data);
@@ -51,10 +45,40 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
     [],
   );
 
-
   const table = useMaterialReactTable({
     columns,
     data,
+    editDisplayMode: 'modal',
+    createDisplayMode: 'modal',
+    muiTableHeadCellProps: {
+      //easier way to create media queries, no useMediaQuery hook needed.
+      sx: {
+        fontSize: {
+          xs: '10px',
+          sm: '11px',
+          md: '12px',
+          lg: '13px',
+          xl: '14px',
+        },
+      },
+    },
+
+    muiTableBodyProps: {
+      sx: {
+        '& td:nth-of-type(odd)': {
+          backgroundColor: '#f5f5f5',
+        },
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        borderRight: '2px solid #e0e0e0', //add a border between columns
+      },
+    },
+    getRowId: (row) => row.id,
+    enableColumnFilterModes: true, //turn off client-side filtering
+    onGlobalFilterChange: setGlobalFilter, //hoist internal global state to your state
+    autoResetPageIndex: false,
     renderTopToolbarCustomActions: ({ table }) => (
       <Box
         sx={{
@@ -73,7 +97,7 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
       </Box>
     ),
     onPaginationChange: setPagination,
-    state: { pagination },
+    state: { pagination, globalFilter },
     paginationDisplayMode: 'pages',
     enableExpandAll: false, //disable expand all button
     muiDetailPanelProps: () => ({
@@ -95,7 +119,33 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
 
     renderDetailPanel: ({ row }) =>
       row.original.id ? (
-        <div className="grid grid-cols-2 p-2 h-full gap-1">
+        <div className='grid grid-cols-2 gap-1'>
+          <Box
+            sx={{
+              display: 'grid',
+              gridAutoColumns: '1fr',
+              margin: 'auto',
+              bgcolor: 'background.paper',
+              gridTemplateColumns: '1fr',
+              width: '100%',
+              minHeight: '100%',
+              boxShadow: 1,
+              borderRadius: 2,
+              p: 1,
+            }}
+          >
+            <Typography>Cliente: {row.original.nome}</Typography>
+            <Typography>Cnpj: {row.original.cnpj}</Typography>
+            <Typography>Endereço: {row.original.logradouro} </Typography>
+            <Typography>Número: {row.original.numero} </Typography>
+            <Typography>Bairro: {row.original.bairro} </Typography>
+            <Typography>Cep: {row.original.cep} </Typography>
+            <Typography>Cidade: {row.original.municipio} </Typography>
+            <Typography>Estado: {row.original.uf} </Typography>
+            <Typography>Telefone: {row.original.telefone} </Typography>
+            <Typography>Email: {row.original.email} </Typography>
+          </Box>
+
           <div className='flex w-full h-full p-1'>
             <Box
               sx={{
@@ -109,52 +159,25 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
                 boxShadow: 1,
                 borderRadius: 2,
                 p: 1,
+                scrollbarWidth: 'thin',
+                overflowY: 'auto',
               }}
             >
-              <Typography>Cliente: {row.original.nome}</Typography>
-              <Typography>Fantasia: {row.original.fantasia}</Typography>
-              <Typography>Cnpj: {row.original.cnpj}</Typography>
-              <Typography>Endereço: {row.original.logradouro} </Typography>
-              <Typography>Número: {row.original.numero} </Typography>
-              <Typography>Bairro: {row.original.bairro} </Typography>
-              <Typography>Cep: {row.original.cep} </Typography>
-              <Typography>Cidade: {row.original.municipio} </Typography>
-              <Typography>Estado: {row.original.uf} </Typography>
-              <Typography>Telefone: {row.original.telefone} </Typography>
-              <Typography>Email: {row.original.email} </Typography>
-              <Typography>Atividade Principal: {row.original.atividade_principal[0].code + " - " + row.original.atividade_principal[0].text}</Typography>
-            </Box>
-          </div>
-          <div className='flex w-full h-full p-1'>
-            <Box
-              sx={{
-                display: 'grid',
-                gridAutoColumns: '1fr',
-                margin: 'auto',
-                bgcolor: 'background.paper',
-                gridTemplateColumns: '1fr',
-                width: '100%',
-                minHeight: '100%',
-                boxShadow: 1,
-                borderRadius: 2,
-                p: 1
-              }}
-            >
-              <Typography variant='h5'>Atividades Secundárias:</Typography>
-              {row.original.atividades_secundarias.map((ats, index) => (
-                <Typography key={index} className={`${index % 2 === 0 ?
+              <Typography variant='subtitle1'>Atividade Principal: {row.original.atividade_principal[0].code + " - " + row.original.atividade_principal[0].text}</Typography>
+              <Typography variant='subtitle1'>Atividades Secundárias:</Typography>
+              {row.original.atividades_secundarias.map((ats, i) => (
+                <Typography key={+i} className={`px-1 ${i % 2 === 0 ?
                   'bg-gray-200' : 'bg-gray-400'}`}>
                   {ats.code} - {ats.text}
                 </Typography>
               ))
               }
-
             </Box>
           </div>
         </div>
       ) : null,
     initialState: {
-      showColumnFilters: true, showGlobalFilter: true, columnVisibility: {
+      showColumnFilters: true, density: 'compact', showGlobalFilter: true, columnVisibility: {
         id: false,
         situacao: false,
         tipo: false,
@@ -178,6 +201,7 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
         capital_social: false,
       },
     },
+
     filterFns: {
       customFilterFn: (row, id, filterValue) => {
         return row.getValue(id) === filterValue;
@@ -194,8 +218,8 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
       showRowsPerPage: false,
       variant: 'outlined',
     },
-
   });
+
 
   return <MaterialReactTable table={table} />;
 };

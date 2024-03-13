@@ -13,22 +13,23 @@ export const metadata: Metadata = {
   description: "Gerenciar download de arquivos",
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-
     <html lang="pt-br">
-      <body className={`flex flex-col min-h-screen ${inter.className}`}>
-        <Navigation />
-        <ToastContainer />
-        {children}
-        <Footer />
+
+      <body className={inter.className}>
+        <div className="Conteudo">
+          <Navigation />
+          <ToastContainer />
+          {children}
+          <Footer />
+        </div>
       </body>
+
     </html>
 
   );

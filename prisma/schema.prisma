@@ -20,6 +20,7 @@ model Customer {
   natureza_juridica String?
   atividade_principal AtividadePrincipal[]
   atividades_secundarias AtividadesSecundarias[]
+  atv_principal String?
   qsa Qsa[]
   logradouro String?
   numero String?

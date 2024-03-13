@@ -1,8 +1,6 @@
 'use client';
-import TabelaCliente from "./components/clientes/TabelaCliente";
-import TabelaCnpjBase from "./components/cnpj/TabelaCnpjBase";
 import FormularioDadosCliente from "./components/FormularioDadosCliente";
-import { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
@@ -11,9 +9,9 @@ import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
 import Header from "./components/navigation/navbar/header";
 import Loading from "./loading";
-import TableClientes from "./components/clientes/TableClientes";
 import TableCnpjBase from "./components/cnpj/TableCnpjBase";
 import ClientesTable from "./components/clientes/ClientesTable";
+
 type BaseCnpj = {
   id?: string;
   cnpj: string;
@@ -21,13 +19,6 @@ type BaseCnpj = {
 type TBaseCnpj = {
   id?: string;
   cnpj: string;
-}
-type TClientes = {
-  id: string;
-  nome: string;
-  cnpj: string;
-  municipio: string;
-  uf: string;
 }
 
 const initialState: TBaseCnpj[] = [];
@@ -70,6 +61,13 @@ export default function Home() {
       'Charset': 'utf-8',
     };
   }, []);
+
+  useEffect(() => {
+    if (inputToken.trim() === "") {
+      setInputToken(strtoken);
+    }
+  }, [inputToken]);
+
 
   const handlerCnpjBase = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -118,27 +116,30 @@ export default function Home() {
     }
   };
 
-  async function onEnviarToken() {
+  const onEnviarToken = async () => {
     if (inputToken.trim() === "") {
       return;
+    } else {
+      await api.post("/api/token", {
+        token: inputToken,
+      }).then((response) => {
+        if (response.status === 200) {
+          ShowToast.showToast("Token Enviado com Sucesso!", "success");
+        }
+      }).catch((error) => {
+        ShowToast.showToast("Erro ao enviar o token!", "error");
+      });
     }
-    const response = await api.post("/api/cnpj", {
-      token: inputToken,
-    });
-  }
-
-  function getInputToken(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    e.preventDefault();
-    if (inputToken.trim() === "") return;
-    console.log(inputToken);
-  }
+  };
 
   const removeCnpjBase = useCallback(async (id: string) => {
     setProcessando(true);
     try {
       const response = await api.delete("/api/cnpj/", { data: { id } });
       if (response.status === 200) {
-        console.log("CNPJ removido com sucesso!", response.status);
+        console.log("response: ", response);
+        console.log(`CNPJ ${id} removido com sucesso!`, response.status);
+        dispatch({ type: "remove", id });
 
         setProcessando(false);
         return response.status;
@@ -226,9 +227,7 @@ export default function Home() {
 
   // ...Mostrar os dados da Base Cnpj
 
-  useEffect(() => {
-    setInputToken(strtoken);
-  }, [inputToken]);
+
 
   function detalhesDoCliente(cliente: Customer) {
     setCliente(cliente);
@@ -237,30 +236,34 @@ export default function Home() {
 
   //busca dados cnpj Base mongodb
 
-  const showCnpjAll = useCallback(async () => {
+  const showCnpjAll = async () => {
+    const controller = new AbortController();
     let xbase: TBaseCnpj[] = [];
     setProcessando(true);
     await api.get("/api/base").then((res) => {
       const data = res.data;
+      console.log("Status Retornado: ", res.status);
       if (res.status === 200) {
         xbase = data.dados;
         dispatch({ type: "complete", payload: data.dados });
         setProcessando(false);
         return res.data;
-      } else {
+      } else if (res.status === 404) {
         ShowToast.showToast("Não existe registro na Base de Dados!", "error");
+        controller.abort();
       }
-    }).catch((error) => {
-      ShowToast.showToast("Erro ao buscar os dados na base de dados!", "error");
-      console.log(error);
+    }).finally(() => {
       setProcessando(false);
+      controller.abort();
     });
-
-  }, []);
+    return () => {
+      controller.abort();
+    };
+  };
 
   useEffect(() => {
     showCnpjAll();
-  }, [state, showCnpjAll]);
+  }, [state]);
 
   useEffect(() => {
     showDataClienteAll();
@@ -272,7 +275,8 @@ export default function Home() {
 
   return (
     <Suspense fallback={<Loading />}>
-      <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative">
+      {/* <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative"> */}
+      <div className="Content">
         <Header>
           <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
             Selecionar um arquivo csv &#187;
@@ -295,7 +299,7 @@ export default function Home() {
               onChange={(e) => setInputToken(e.target.value)}
               className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
             ></textarea>
-            <button onClick={onEnviarToken} className="botao botao-blue ml-3">
+            <button onClick={() => onEnviarToken()} className="botao botao-blue ml-3">
               Enviar Token
             </button>
           </div>
@@ -338,7 +342,7 @@ export default function Home() {
             <div className="flex w-full text-sm">
               <TableCnpjBase data={state || null} />
             </div>
-            <div className="flex flex-col col-span-3 w-full max-h-[48rem]">
+            <div className="flex flex-col col-span-3 w-full max-h-full">
               <ClientesTable data={clientes} />
             </div>
           </div>
@@ -349,7 +353,7 @@ export default function Home() {
                          lg:grid-cols-4 xl:grid-cols-4 
                          2xl:grid-cols-4`}>
             <div className="flex w-full text-sm p-3">
-              <TabelaCnpjBase base={state} />
+              <TableCnpjBase data={state} />
             </div>
             <div className="flex flex-col col-span-3 w-full">
               <div className="tableContainer">

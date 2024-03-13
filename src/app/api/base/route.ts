@@ -22,7 +22,7 @@ export const GET = async (request: NextRequest, response: NextResponse) => {
     if (dados.length > 0) {
       return NextResponse.json({ dados }, { status: 200 });
     } else {
-      return NextResponse.json({ error: 'Não existe Cnpjs Cadastrados' }, { status: 404 });
+      return NextResponse.json({ status: 404 });
     }
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error!" }, { status: 500 });

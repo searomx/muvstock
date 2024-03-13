@@ -9,7 +9,7 @@ export function SocialIcons() {
         target="_blank"
         rel=""
       >
-        <FaXTwitter size={24} className="text-black hover:text-gray-700" />
+        <FaXTwitter size={24} className="text-gray-700 hover:text-white " />
       </a>
       {/* Instagran icon */}
       <a

@@ -2,7 +2,6 @@ import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const customer = prisma?.customer.fields;
-let token = [];
 
 /*Script para tratar o cnpj*/
 
@@ -17,6 +16,15 @@ export const criarBaseCnpj = async (cnpj: string) => {
     console.log(err);
     return NextResponse.json({ err }, { status: 500 });
   });
+}
+
+export const getToken = async () => {
+  const res = await prisma.token.findFirst({
+    select: {
+      token: true,
+    },
+  });
+  return res;
 }
 
 export const findCnpjAll = async () => {
@@ -74,14 +82,6 @@ export const findCliente = async () => {
       return res;
     });
 };
-export async function deleteCnpj(id: string) {
-  // const db = await connect();
-  // try {
-  //   return db.collection("baseCnpj").deleteOne({ _id: id });
-  // } catch (e) {
-  //   console.log(e);
-  // }
-}
 
 export const getAllClientes = () => {
   return prisma.customer.findMany({
@@ -90,18 +90,6 @@ export const getAllClientes = () => {
     },
     orderBy: {
       nome: "asc",
-    },
-  });
-};
-
-export const getToken = () => {
-  return prisma.customer.findMany({
-    orderBy: {
-      nome: "asc",
-    },
-    select: {
-      id: true,
-      nome: true,
     },
   });
 };
@@ -118,6 +106,19 @@ export const getByCnpj = async (cnpj: string) => {
     console.log(error);
   }
 };
+
+export const postToken = async (token: string) => {
+  try {
+    const dados = await prisma.token.create({
+      data: {
+        token,
+      },
+    });
+    return dados;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const getById = async (id: string) => {
   try {
@@ -172,8 +173,3 @@ export const deleteCnpjById = async (id: string) => {
     console.log(error);
   }
 };
-
-/*const post = await prisma.post.delete({
-    where: { id },
-  })
-  res.json(post)*/

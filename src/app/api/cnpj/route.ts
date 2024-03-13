@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { cnpjMask } from "@/lib/utils/cnpjMask";
+import { getToken } from "@/lib/services";
 
 type TDadosCustomer = {
   nome: string;
@@ -23,6 +24,7 @@ type TDadosCustomer = {
       code: string;
     }
   ];
+  atv_principal: string;
   atividades_secundarias: [
     {
       text: string;
@@ -65,12 +67,15 @@ export async function POST(req: NextRequest, resp: NextResponse) {
 }
 
 const obterDados = async (cnpjValue: string) => {
+  const receitaws_token = await getToken();
   try {
     const response = await fetch(
       `https://www.receitaws.com.br/v1/cnpj/${cnpjValue}`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer ' + receitaws_token,
       },
     }
     );
@@ -92,6 +97,7 @@ const obterDados = async (cnpjValue: string) => {
         fantasia: json.fantasia,
         capital_social: json.capital_social,
         atividade_principal: json.atividade_principal,
+        atv_principal: json.atividade_principal[0].code,
         atividades_secundarias: json.atividades_secundarias,
         qsa: json.qsa,
       },

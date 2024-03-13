@@ -15,6 +15,24 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar {
+  right: 0;
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 8px;
+  width: 12px;
+  height: 12px;
+}
+
 * {
   font-family: "Roboto", "Verdana", "Inter", "Poppins", sans-serif, Geneva,
     Tahoma;
@@ -40,6 +58,37 @@ body {
   box-sizing: border-box;
   font-family: "Roboto", Verdana, Geneva, Tahoma, sans-serif;
   font-size: 85%;
+}
+
+.Content {
+  line-height: 1.6;
+  margin: 0 auto;
+  margin-top: 0;
+  background-color: #fff;
+  width: 100%;
+  padding: 1rem;
+  padding-bottom: 2rem;
+  min-height: calc(100vh - 68px - 42.69px);
+}
+
+.Conteudo {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.Footer {
+  background-color: #000000;
+  color: rgba(255, 255, 255, 0.85);
+  height: 3.125rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 1.57rem 0;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 }
 
 .tableContainer {

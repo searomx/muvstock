@@ -26,6 +26,7 @@ type TdadosCustomer = {
       code: string;
     }
   ];
+  atv_principal: string;
   atividades_secundarias: [
     {
       text: string;
@@ -78,6 +79,7 @@ export const POST = async (req: Request, res: Response) => {
             fantasia: json.fantasia,
             capital_social: json.capital_social,
             atividade_principal: json.atividade_principal,
+            atv_principal: json.atividade_principal[0].code,
             atividades_secundarias: json.atividades_secundarias,
             qsa: json.qsa,
           },

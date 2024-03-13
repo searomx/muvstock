@@ -18,8 +18,8 @@ const ColunasCliente = [
   },
   {
     accessorKey: 'nome',
-    filterFn: 'startsWith',
     header: 'Nome',
+    filterFn: 'startsWith',
     minSize: 100,
     maxSize: 200,
     size: 180,
@@ -34,6 +34,12 @@ const ColunasCliente = [
     size: 80,
   },
   {
+    accessorKey: 'atv_principal',
+    filterFn: 'startsWith',
+    size: 50,
+    header: 'Atividade Principal',
+  },
+  {
     accessorKey: 'porte',
     size: 50,
     header: 'Porte',
@@ -43,22 +49,6 @@ const ColunasCliente = [
     size: 80,
     header: 'Natureza',
   },
-  // {
-  //   accessorKey: 'atividade_principal',
-  //   valueFn: (row: { atividade_principal: any[]; }) => {
-  //     return row.atividade_principal.map((a: any) => a.text).join(', ');
-  //   },
-  //   size: 180,
-  //   header: 'Natureza',
-  // },
-  // {
-  //   accessorKey: 'atividades_secundarias',
-  //   valueFn: (row: { atividades_secundarias: any[]; }) => {
-  //     return row.atividades_secundarias.map((a: any) => a.text).join(', ');
-  //   },
-  //   size: 180,
-  //   header: 'Natureza',
-  // },
   {
     accessorKey: 'logradouro',
     size: 180,
@@ -131,5 +121,5 @@ const ColunasCliente = [
     header: 'Capital Social',
   },
 ];
-
 export default ColunasCliente;
+
