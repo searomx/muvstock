@@ -4,10 +4,6 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
   MRT_PaginationState,
-  MRT_Row,
-  type MRT_ColumnFiltersState,
-  type MRT_SortingState,
-  type MRT_RowVirtualizer,
 } from 'material-react-table';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
@@ -48,8 +44,16 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
   const table = useMaterialReactTable({
     columns,
     data,
+    positionToolbarAlertBanner: 'top',
+    muiCircularProgressProps: {
+      color: 'secondary',
+      thickness: 5,
+      size: 55,
+    },
+    muiSkeletonProps: {}, // Declare and initialize muiSkeletonProps with an empty object
     editDisplayMode: 'modal',
     createDisplayMode: 'modal',
+    enableRowSelection: true,
     muiTableHeadCellProps: {
       //easier way to create media queries, no useMediaQuery hook needed.
       sx: {
@@ -65,14 +69,9 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
 
     muiTableBodyProps: {
       sx: {
-        '& td:nth-of-type(odd)': {
+        '& tr:nth-of-type(odd)': {
           backgroundColor: '#f5f5f5',
         },
-      },
-    },
-    muiTableBodyCellProps: {
-      sx: {
-        borderRight: '2px solid #e0e0e0', //add a border between columns
       },
     },
     getRowId: (row) => row.id,
@@ -97,7 +96,7 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
       </Box>
     ),
     onPaginationChange: setPagination,
-    state: { pagination, globalFilter },
+    state: { isLoading: false, pagination, globalFilter },
     paginationDisplayMode: 'pages',
     enableExpandAll: false, //disable expand all button
     muiDetailPanelProps: () => ({
@@ -215,7 +214,7 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
     muiPaginationProps: {
       color: 'primary',
       shape: 'rounded',
-      showRowsPerPage: false,
+      showRowsPerPage: true,
       variant: 'outlined',
     },
   });

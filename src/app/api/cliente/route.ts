@@ -46,9 +46,13 @@ type DadosClientesProps = {
 export const GET = async (req: Request, res: Response) => {
   try {
     const data = await getAllClientes();
-    return NextResponse.json(data, { status: 200 });
+    if (data.length === 0) {
+      return NextResponse.json({ message: "Nenhum cliente cadastrado" }, { status: 404 });
+    } else {
+      return NextResponse.json(data, { status: 200 });
+    }
   } catch (error) {
-    return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
+    return NextResponse.json({ message: "Erro no Servidor" }, { status: 404 });
   }
 };
 

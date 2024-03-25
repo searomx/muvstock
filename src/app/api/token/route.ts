@@ -15,13 +15,13 @@ export async function POST(req: NextRequest, resp: NextResponse) {
 }
 
 export async function GET(req: NextRequest, resp: NextResponse) {
-  const { token } = await req.json();
+  const { token } = await getToken();
   try {
     if (token) {
-      const result = await getToken();
-      return NextResponse.json({ result }, { status: 200 });
+      return NextResponse.json({ token }, { status: 200 });
+    } else {
+      return NextResponse.json({ message: "Token não encontrado" }, { status: 404 });
     }
-
   } catch (error) {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
   }

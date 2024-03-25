@@ -32,6 +32,8 @@ const ColunasCliente = [
     minSize: 50,
     maxSize: 100,
     size: 80,
+    muiTableHeadCellProps: { sx: { color: 'green' } }, //optional custom props
+    Cell: ({ cell }) => <span>{cell.getValue()}</span>,
   },
   {
     accessorKey: 'atv_principal',

@@ -44,6 +44,7 @@ type TDadosCustomer = {
 
 export async function POST(req: NextRequest, resp: NextResponse) {
   const { cnpj } = await req.json();
+  console.log("CNPJ-ENVIADO-ROUTE-CBPJ: ", cnpj);
   const xcnpj: string = cnpjMask(cnpj);
   try {
     if (cnpj) {
@@ -52,11 +53,11 @@ export async function POST(req: NextRequest, resp: NextResponse) {
           cnpj: xcnpj,
         },
       });
-      if (!resultado) {
+      if (resultado === null) {
         const result: TDadosCustomer[] = await obterDados(cnpj);
         return NextResponse.json({ result }, { status: 200 });
       } else {
-        return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} já está cadastrado` }, { status: 201 });
+        return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} já está cadastrado` }, { status: 402 });
       }
     } else {
       NextResponse.json({ message: "Não foi enviado nenhum cnpj!" }, { status: 404 });
@@ -102,6 +103,7 @@ const obterDados = async (cnpjValue: string) => {
         qsa: json.qsa,
       },
     }).then((res) => {
+      removeCnpj(cnpjValue);
       return res;
     }).catch((error) => {
       return error;
@@ -114,16 +116,25 @@ const obterDados = async (cnpjValue: string) => {
 };
 //excluir cnpj da base
 
-export async function DELETE(req: NextRequest, resp: NextResponse) {
-  const { id } = await req.json();
+const removeCnpj = async (cnpj: string) => {
+  const getcnpj = await prisma.base.findFirst({
+    where: {
+      cnpj: cnpj,
+    },
+    select: {
+      id: true,
+      cnpj: true,
+    },
+  });
   try {
-    if (id) {
+    if (getcnpj) {
       const resultado = await prisma.base.delete({
         where: {
-          id,
+          id: getcnpj.id, // Replace with the actual id value
         },
       });
       if (resultado) {
+        console.log("CNPJ-REMOVIDO-ROUTE-DB-REMOVE: ", resultado.id);
         return NextResponse.json({ message: `O cnpj: ${resultado.cnpj} foi excluído` }, { status: 200 });
       }
     } else {
@@ -132,5 +143,4 @@ export async function DELETE(req: NextRequest, resp: NextResponse) {
   } catch (error) {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 500 });
   }
-  return NextResponse.json({ message: "OK--Deletou" }, { status: 200 });
 }

@@ -3,20 +3,23 @@ import { NextResponse } from "next/server";
 
 const customer = prisma?.customer.fields;
 
-/*Script para tratar o cnpj*/
+type TBase = {
+  cnpj?: string;
 
-export const criarBaseCnpj = async (cnpj: string) => {
-  const res = await prisma.base.create({
-    data: {
-      cnpj: cnpj,
-    },
-  }).then((res) => {
-    return NextResponse.json({ res }, { status: 201 });
-  }).catch((err) => {
-    console.log(err);
-    return NextResponse.json({ err }, { status: 500 });
-  });
 }
+type TCnpj = {
+  id?: string;
+  cnpj?: string;
+
+}
+
+export const criarBaseCnpj = async (base: TBase[]) => {
+  const resposta: any = await prisma.base.createMany({
+    data: base,
+  });
+  return resposta;
+}
+
 
 export const getToken = async () => {
   const res = await prisma.token.findFirst({
@@ -83,15 +86,20 @@ export const findCliente = async () => {
     });
 };
 
-export const getAllClientes = () => {
-  return prisma.customer.findMany({
-    where: {
-      situacao: "ATIVA",
-    },
-    orderBy: {
-      nome: "asc",
-    },
-  });
+export const getAllClientes = async () => {
+  try {
+    const retorno = await prisma.customer.findMany({
+      where: {
+        situacao: "ATIVA",
+      },
+      orderBy: {
+        nome: "asc",
+      },
+    });
+    return retorno;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getByCnpj = async (cnpj: string) => {
