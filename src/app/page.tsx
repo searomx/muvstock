@@ -10,8 +10,24 @@ import Header from "./components/navigation/navbar/header";
 import Loading from "./loading";
 import TableCnpjBase from "./components/cnpj/TableCnpjBase";
 import ClientesTable from "./components/clientes/ClientesTable";
-
+import Button from '@mui/material/Button';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SendIcon from '@mui/icons-material/Send';
+import SignalWifiBadSharpIcon from '@mui/icons-material/SignalWifiBadSharp';
 import { ToastContainer, Bounce } from "react-toastify";
+import { styled } from "@mui/material/styles";
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 type BaseCnpj = {
   id?: string;
@@ -37,7 +53,6 @@ function reducer(state: TBaseCnpj[], action: Action) {
     default:
       return state;
   }
-
 }
 
 function reducerCliente(stateCliente: Customer[], action: ActionCliente) {
@@ -51,41 +66,39 @@ function reducerCliente(stateCliente: Customer[], action: ActionCliente) {
   }
 }
 
+// const startIntervalo = () => {
+//   let totalSegundos = 2 * 60;
+//   const intervalo = setInterval(() => {
+//     totalSegundos--;
+//     if (totalSegundos === 0) {
+//       clearInterval(intervalo);
+//     }
+//   }, 1000);
+// }
+
+
 export default function Home() {
-  const [clientes, setClientes] = useState<Customer[] | null>([]);
   const [state, dispatch] = useReducer(reducer, initialState);
   const [stateCliente, dispatchCliente] = useReducer(reducerCliente, initialStateCliente);
   const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("");
   const [processando, setProcessando] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [totalSegundos, setTotalSegundos] = useState<number>(2 * 60);
+  let [totalSegundos, setTotalSegundos] = useState<number>(60);
   const minutos = Math.floor(totalSegundos / 60);
   const segundos = totalSegundos % 60;
   const intervalo = useRef<NodeJS.Timeout | null>(null);
+  const [totalBaseCnpj, setTotalBaseCnpj] = useState<number>(0);
+  const [totalClientes, setTotalClientes] = useState<number>(0);
 
-  const strtoken =
-    "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IndvcmxkIiwibWVzc2FnZSI6IlRoYW5rcyBmb3IgdmlzaXRpbmcgbm96emxlZ2Vhci5jb20hIiwiaXNzdWVkIjoxNTU3MjU4ODc3NTI2fQ.NXd7lC3rFLiNHXwefUu3OQ-R203pGfB87-dIrk2S-vqfaygIWFwZKzmGHr6pzYkl2a0HkY0fdwa38yLWu8Zdhg";
-
-  const cabecalho = useMemo(() => {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Charset': 'utf-8',
-    };
-  }, []);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const SaveAsCnpj = async (cnpjs: BaseCnpj[]) => {
+  const SaveAsCnpj = useCallback(async (cnpjs: BaseCnpj[]) => {
     setProcessando(true);
     try {
-      await api.post("/api/base/", cnpjs).then((response) => {
+      await api.post("/api/base/", cnpjs).then(async (response) => {
         const resp = response.data;
-        console.log("response-status-page:", resp);
-        console.log("response-data-page:", JSON.stringify(response.data));
         if (response.data === 200 || 201) {
+          await showCnpjAll();
           ShowToast.showToast("Dados base-cnpj salvos com sucesso!", "success");
-          showCnpjAll();
         } else {
           ShowToast.showToast("Erro ao salvar os dados da Base Cnpj!", "error");
         }
@@ -96,7 +109,7 @@ export default function Home() {
       setProcessando(false);
       ShowToast.showToast("Erro ao salvar os dados da Base Cnpj!", "error");
     }
-  };
+  }, []);
 
   const handlerCnpjBase = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -129,7 +142,7 @@ export default function Home() {
       return;
     } else {
       await api.post("/api/token", {
-        token: inputToken,
+        token: inputToken.trim(),
       }).then((response) => {
         if (response.status === 200) {
           ShowToast.showToast("Token Enviado com Sucesso!", "success");
@@ -141,7 +154,7 @@ export default function Home() {
   }, [inputToken]);
 
   useEffect(() => {
-    onEnviarToken;
+    onEnviarToken();
   }, [onEnviarToken]);
 
   const showDataClienteAll = async () => {
@@ -159,7 +172,6 @@ export default function Home() {
       return;
     };
   };
-
   useEffect(() => {
     showDataClienteAll();
   }, []);
@@ -184,70 +196,60 @@ export default function Home() {
     }
   }, [dispatchCliente, dispatch]);
 
+
   const getDataCustomer = useCallback(async () => {
     if (inputCnpjUnico.trim() === "") {
       setIsRunning(true);
       const cnpjsBase = state.filter((cnpj, idx) => idx < 3);
-      cnpjsBase.map((item, idx) => {
+      cnpjsBase.map(async (item, indice) => {
         const strCnpj = ValidaCnpj(item.cnpj);
         const idCnpj = item.id as string;
-        if (strCnpj) {
-          saveCustomer(strCnpj, idCnpj);
+        await saveCustomer(strCnpj, idCnpj);
+        if (totalSegundos === 0) {
+          setTotalSegundos(60);
         }
-        if (idx === 2) {
-          setIsRunning(false);
-        }
+
       });
     } else {
       const strCnpj = ValidaCnpj(inputCnpjUnico);
       const idCnpj = state.filter((cnpj) => cnpj.cnpj === strCnpj);
       if (strCnpj) {
         setIsRunning(false);
-        saveCustomer(strCnpj, idCnpj[0].id);
+        await saveCustomer(strCnpj, idCnpj[0].id);
       }
     }
-  }, [inputCnpjUnico, state, saveCustomer]);
+  }, [inputCnpjUnico, saveCustomer, state, totalSegundos]);
 
-  const startTemporizador = useCallback(async () => {
-    if (!isRunning) {
-      await getDataCustomer();
-      // isRunning ? setTotalSegundos(2 * 60) : setTotalSegundos(0);
-    } else {
-      if (totalSegundos === 0) {
-        await getDataCustomer();
-        setTotalSegundos(2 * 60);
-      } else {
-        intervalo.current = setTimeout(() => {
-          setTotalSegundos(totalSegundos - 1);
-        }, 1000);
-        setIsRunning(true);
-      }
-    }
-  }, [getDataCustomer, isRunning, totalSegundos]);
+  const startTemporizador = async () => {
+    await getDataCustomer();
+    setIsRunning(true);
+  };
 
   useEffect(() => {
-    console.log("isRunning:", isRunning);
     if (isRunning) {
-      return () => {
-        startTemporizador();
-      }
+      intervalo.current = setTimeout(async () => {
+        setTotalSegundos(totalSegundos - 1);
+        if (totalSegundos === 0) {
+          await getDataCustomer();
+        }
+      }, 1000);
     }
-  }, [isRunning, startTemporizador]);
+    return () => {
+      if (intervalo.current) {
+        clearTimeout(intervalo.current);
+      }
+    };
+  }, [isRunning, totalSegundos, getDataCustomer]);
 
   //busca dados cnpj Base mongodb
 
   const showCnpjAll = async () => {
     setProcessando(true);
-    await api.get("/api/base", {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Charset': 'utf-8',
-      }
-    }).then((res) => {
+    await api.get("/api/base").then((res) => {
       const data: TBaseCnpj[] = res.data; // Update the type of data to be an array of TBaseCnpj
       if (res.status === 200) {
         dispatch({ type: "complete", payload: res.data.dados });
+        setTotalBaseCnpj(data.length);
         setProcessando(false);
 
       } else if (res.status === 404) {
@@ -285,8 +287,11 @@ export default function Home() {
   }, [inputToken]);
 
   const stopRequestCnpj = () => {
-    setIsRunning(false);
-    clearTimeout(intervalo.current);
+    return () => {
+      setIsRunning(false);
+      clearTimeout(intervalo.current);
+      setTotalSegundos(60);
+    }
   };
   useEffect(() => {
     return () => {
@@ -297,19 +302,32 @@ export default function Home() {
 
   return (
     <>
-      <Suspense fallback={<Loading />}>
-        {/* <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative"> */}
 
-        <div className="Content">
+      {/* <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative"> */}
+
+      <div className="Content">
+        <Suspense fallback={<p className="font-bold text-2xl">Loading...</p>}>
           <Header>
-            <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
+            <Button
+              component="label"
+              id="selecao-arquivo"
+              htmlFor="selecao-arquivo"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              startIcon={<CloudUploadIcon />}
+            >
+              Selecione um arquivo .csv
+              <VisuallyHiddenInput type="file" accept=".csv" />
+            </Button>
+            {/* <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
               Selecionar um arquivo csv &#187;
             </label>
             <input
               id="selecao-arquivo"
               accept=".csv"
               type="file"
-              onChange={handlerCnpjBase} />
+              onChange={handlerCnpjBase} /> */}
 
             <div className="flex h-[5rem] bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
               <textarea
@@ -323,9 +341,9 @@ export default function Home() {
                 onChange={(e) => setInputToken(e.target.value)}
                 className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
               ></textarea>
-              <button id="btn-enviarToken" name="btn-enviarToken" onClick={() => onEnviarToken()} className="botao botao-blue ml-3">
+              <Button id="btn-enviarToken" variant="contained" endIcon={<SendIcon />} name="btn-enviarToken" onClick={() => onEnviarToken()}>
                 Enviar Token
-              </button>
+              </Button>
             </div>
             <div className="flex h-[5rem] bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
               <input
@@ -337,22 +355,23 @@ export default function Home() {
                 className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
                 placeholder="Digite o Cnpj..."
               />
-              <button
+              <Button
                 id="btn-enviar-individual"
                 name="btn-enviar-individual"
                 onClick={() => startTemporizador()}
-                className="botao botao-blue ml-3"
+                variant="contained" endIcon={<SendIcon />}
+
               >
                 Enviar Cnpj
-              </button>
-              <button
+              </Button>
+              <Button
                 id="btn-stop"
                 name="btn-stop"
-                onClick={() => stopRequestCnpj()}
-                className="botao botao-blue ml-3"
+                onClick={stopRequestCnpj}
+                variant="contained" endIcon={<SignalWifiBadSharpIcon />}
               >
                 Interromper
-              </button>
+              </Button>
             </div>
             <div className="flex h-[5rem] w-auto bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
               <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
@@ -374,8 +393,8 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div >
-      </Suspense>
+        </Suspense>
+      </div >
       <ToastContainer transition={Bounce} />
     </>
   );

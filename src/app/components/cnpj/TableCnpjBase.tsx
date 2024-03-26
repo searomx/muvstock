@@ -98,7 +98,7 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
     muiPaginationProps: {
       color: 'primary',
       shape: 'rounded',
-      showRowsPerPage: false,
+      showRowsPerPage: true,
       variant: 'outlined',
     },
   });
