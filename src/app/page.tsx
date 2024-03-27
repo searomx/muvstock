@@ -287,16 +287,12 @@ export default function Home() {
   }, [inputToken]);
 
   const stopRequestCnpj = () => {
-    return () => {
-      setIsRunning(false);
-      clearTimeout(intervalo.current);
-      setTotalSegundos(60);
-    }
+    setIsRunning(false);
+    clearTimeout(intervalo.current);
+    setTotalSegundos(60);
   };
   useEffect(() => {
-    return () => {
-      stopRequestCnpj();
-    };
+    stopRequestCnpj();
   }, []);
 
 
@@ -367,7 +363,7 @@ export default function Home() {
               <Button
                 id="btn-stop"
                 name="btn-stop"
-                onClick={stopRequestCnpj}
+                onClick={() => stopRequestCnpj()}
                 variant="contained" endIcon={<SignalWifiBadSharpIcon />}
               >
                 Interromper
