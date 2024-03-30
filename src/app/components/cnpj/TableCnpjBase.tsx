@@ -24,6 +24,7 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
     pageSize: 10,
   });
 
+
   const columns = useMemo<MRT_ColumnDef<TBaseCnpj>[]>(
     () => [{
       accessorKey: 'id',

@@ -88,6 +88,7 @@ export default function Home() {
   const minutos = Math.floor(totalSegundos / 60);
   const segundos = totalSegundos % 60;
   const intervalo = useRef<NodeJS.Timeout | null>(null);
+  const intervaloTimer = useRef<NodeJS.Timeout | null>(null);
   const [totalBaseCnpj, setTotalBaseCnpj] = useState<number>(0);
   const [totalClientes, setTotalClientes] = useState<number>(0);
 
@@ -146,6 +147,8 @@ export default function Home() {
       }).then((response) => {
         if (response.status === 200) {
           ShowToast.showToast("Token Enviado com Sucesso!", "success");
+        } else if (response.status === 402) {
+          ShowToast.showToast("Token já está cadastrado!", "info");
         }
       }).catch(() => {
         ShowToast.showToast("Erro ao enviar o token!", "error");
@@ -154,8 +157,9 @@ export default function Home() {
   }, [inputToken]);
 
   useEffect(() => {
-    onEnviarToken();
-  }, [onEnviarToken]);
+    if (inputToken.length === 0)
+      onEnviarToken();
+  }, [inputToken, onEnviarToken]);
 
   const showDataClienteAll = async () => {
     setProcessando(true);
@@ -205,10 +209,6 @@ export default function Home() {
         const strCnpj = ValidaCnpj(item.cnpj);
         const idCnpj = item.id as string;
         await saveCustomer(strCnpj, idCnpj);
-        if (totalSegundos === 0) {
-          setTotalSegundos(60);
-        }
-
       });
     } else {
       const strCnpj = ValidaCnpj(inputCnpjUnico);
@@ -218,28 +218,93 @@ export default function Home() {
         await saveCustomer(strCnpj, idCnpj[0].id);
       }
     }
-  }, [inputCnpjUnico, saveCustomer, state, totalSegundos]);
+  }, [inputCnpjUnico, saveCustomer, state]);
 
   const startTemporizador = async () => {
     await getDataCustomer();
     setIsRunning(true);
   };
 
+  // useEffect(() => {
+  //   if (isRunning && totalSegundos === 0) {
+  //     const intervalo = setInterval(async () => {
+  //       await getDataCustomer();
+  //     }, 60000);
+  //     return () => clearInterval(intervalo);
+  //   }
+  // }, [getDataCustomer, isRunning, totalSegundos]);
+
   useEffect(() => {
+    let tamanhoBase = totalBaseCnpj;
     if (isRunning) {
-      intervalo.current = setTimeout(async () => {
+      intervaloTimer.current = setTimeout(async () => {
         setTotalSegundos(totalSegundos - 1);
         if (totalSegundos === 0) {
           await getDataCustomer();
+          clearTimeout(intervaloTimer.current);
+          setTotalSegundos(60);
+          setIsRunning(true);
         }
       }, 1000);
     }
     return () => {
-      if (intervalo.current) {
-        clearTimeout(intervalo.current);
+      if (intervaloTimer.current) {
+        clearTimeout(intervaloTimer.current);
       }
     };
-  }, [isRunning, totalSegundos, getDataCustomer]);
+  }, [getDataCustomer, isRunning, totalSegundos]);
+
+  // useEffect(() => {
+  //   if ((isRunning) && (totalSegundos === 0)) {
+  //     intervalo.current = setInterval(async () => {
+  //       await getDataCustomer();
+  //       setTotalSegundos(60);
+  //     }, 60000);
+  //   }
+  //   return () => {
+  //     if (intervalo.current) {
+  //       clearInterval(intervalo.current);
+  //     }
+  //   };
+  // }, [getDataCustomer, isRunning, totalSegundos]);
+
+  // useEffect(() => {
+  //   if (isRunning) {
+  //     intervaloTimer.current = setTimeout(() => {
+  //       setTotalSegundos(totalSegundos - 1);
+
+  //       if (totalSegundos === 0) {
+  //         clearInterval(intervalo.current);
+  //         clearTimeout(intervaloTimer.current);
+  //         setTotalSegundos(60);
+  //         setIsRunning(true);
+
+  //       }
+  //     }, 1000);
+  //   }
+  //   return () => {
+  //     if (intervaloTimer.current) {
+  //       clearTimeout(intervaloTimer.current);
+  //     }
+  //   };
+  // }, [isRunning, totalSegundos]);
+
+
+  // useEffect(() => {
+  //   if (isRunning) {
+  //     intervalo.current = setTimeout(async () => {
+  //       setTotalSegundos(totalSegundos - 1);
+  //       if (totalSegundos === 0) {
+  //         clearInterval(intervalo.current);
+  //       }
+  //     }, 1000);
+  //   }
+  //   return () => {
+  //     if (intervalo.current) {
+  //       clearTimeout(intervalo.current);
+  //     }
+  //   };
+  // }, [isRunning, totalSegundos, getDataCustomer]);
 
   //busca dados cnpj Base mongodb
 
@@ -316,15 +381,6 @@ export default function Home() {
               Selecione um arquivo .csv
               <VisuallyHiddenInput type="file" accept=".csv" />
             </Button>
-            {/* <label htmlFor="selecao-arquivo" className="botao botao-orange cursor-pointer">
-              Selecionar um arquivo csv &#187;
-            </label>
-            <input
-              id="selecao-arquivo"
-              accept=".csv"
-              type="file"
-              onChange={handlerCnpjBase} /> */}
-
             <div className="flex h-[5rem] bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
               <textarea
                 id="token"
