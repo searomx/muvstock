@@ -5,8 +5,9 @@ import {
   type MRT_ColumnDef,
   MRT_PaginationState,
 } from 'material-react-table';
-import { Base } from '@prisma/client';
+import { Box, Card, Chip, Stack } from '@mui/material';
 import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
+
 
 type TBaseCnpj = {
   id?: string;
@@ -16,14 +17,15 @@ interface TableCnpjBaseProps {
   data: Array<TBaseCnpj>;
 }
 
-export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
+export default function ClientesTable(props: Readonly<TableCnpjBaseProps>) {
   const { data } = props as { data: TBaseCnpj };
   const [globalFilter, setGlobalFilter] = useState('');
+  const numCnpj: number = props.data.length;
+
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-
 
   const columns = useMemo<MRT_ColumnDef<TBaseCnpj>[]>(
     () => [{
@@ -40,8 +42,17 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
   const table = useMaterialReactTable({
     columns,
     data: data as TBaseCnpj[],
+    positionToolbarAlertBanner: 'top',
+    muiCircularProgressProps: {
+      color: 'secondary',
+      thickness: 5,
+      size: 55,
+    },
+    muiSkeletonProps: {},
+    editDisplayMode: 'modal',
+    createDisplayMode: 'modal',
+    enableRowSelection: false,
     muiTableHeadCellProps: {
-      //easier way to create media queries, no useMediaQuery hook needed.
       sx: {
         fontSize: {
           xs: '10px',
@@ -55,24 +66,40 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
 
     muiTableBodyProps: {
       sx: {
-        '& td:nth-of-type(odd)': {
+        '& tr:nth-of-type(odd)': {
           backgroundColor: '#f5f5f5',
         },
       },
     },
-    muiTableBodyCellProps: {
-      sx: {
-        borderRight: '2px solid #e0e0e0', //add a border between columns
-      },
-    },
     getRowId: (row) => row.id,
     enableColumnFilterModes: true, //turn off client-side filtering
-    onGlobalFilterChange: setGlobalFilter, //hoist internal global state to your state
+    //hoist internal global state to your state
     autoResetPageIndex: false,
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box
+        sx={{
+          display: 'flex',
+          gap: '16px',
+          padding: '8px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <Card>
+          <Stack direction="row" alignItems="center" spacing={3} p={2} useFlexGap>
+            <Stack direction="row" spacing={1} useFlexGap>
+              <Chip
+                size="small"
+                label={`Total de Cnpjs: ${numCnpj}`}
+                color="primary"
+              />
+            </Stack>
+          </Stack>
+        </Card>
+      </Box>
+    ),
     onPaginationChange: setPagination,
-    state: { pagination, globalFilter },
-    paginationDisplayMode: 'pages',
-    enableExpandAll: false, //disable expand all button
+    state: { isLoading: false, pagination, globalFilter },
+    paginationDisplayMode: 'pages', //disable expand all button
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
@@ -81,9 +108,10 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
             : 'rgba(0,0,0,0.1)',
       }),
     }),
+    //custom expand button rotation
 
     initialState: {
-      showColumnFilters: true, density: 'compact', showGlobalFilter: true,
+      showColumnFilters: true, density: 'compact', showGlobalFilter: false,
     },
 
     filterFns: {
@@ -103,6 +131,7 @@ export default function TableCnpjBase(props: Readonly<TableCnpjBaseProps>) {
       variant: 'outlined',
     },
   });
+
 
   return <MaterialReactTable table={table} />;
 };

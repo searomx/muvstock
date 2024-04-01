@@ -206,7 +206,7 @@ th,
   text-shadow: 2px 2px 4px #000000;
 }
 
-input[type="file"] {
+/* input[type="file"] {
   clip: "rect(0 0 0 0)";
   clip-path: "inset(50%)";
   height: 1;
@@ -216,7 +216,9 @@ input[type="file"] {
   left: 0;
   white-space: "nowrap";
   width: 1;
-}
+  display: none;
+  cursor: pointer;
+} */
 
 /* Esconde o input */
 /* input[type="file"] {

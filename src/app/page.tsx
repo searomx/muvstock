@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { Suspense, memo, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
@@ -7,27 +7,17 @@ import CompleteString from "@/lib/utils/CompleteString";
 import ValidaCnpj from "@/lib/utils/validacnpj";
 import ShowToast from "@/lib/utils/showToast";
 import Header from "./components/navigation/navbar/header";
-import Loading from "./loading";
 import TableCnpjBase from "./components/cnpj/TableCnpjBase";
 import ClientesTable from "./components/clientes/ClientesTable";
 import Button from '@mui/material/Button';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SendIcon from '@mui/icons-material/Send';
 import SignalWifiBadSharpIcon from '@mui/icons-material/SignalWifiBadSharp';
 import { ToastContainer, Bounce } from "react-toastify";
+import InputFileUpload from "./components/InputFileUpload";
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import { styled } from "@mui/material/styles";
-
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
+import Box from "@mui/material/Box";
 
 type BaseCnpj = {
   id?: string;
@@ -37,6 +27,14 @@ type TBaseCnpj = {
   id?: string;
   cnpj?: string;
 }
+
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 const initialState: TBaseCnpj[] = [];
 const initialStateCliente: Customer[] = [];
@@ -50,6 +48,7 @@ function reducer(state: TBaseCnpj[], action: Action) {
       return action.payload;
     case "remove":
       return state.filter((cnpj) => cnpj.id !== action.id);
+
     default:
       return state;
   }
@@ -65,17 +64,6 @@ function reducerCliente(stateCliente: Customer[], action: ActionCliente) {
       return stateCliente;
   }
 }
-
-// const startIntervalo = () => {
-//   let totalSegundos = 2 * 60;
-//   const intervalo = setInterval(() => {
-//     totalSegundos--;
-//     if (totalSegundos === 0) {
-//       clearInterval(intervalo);
-//     }
-//   }, 1000);
-// }
-
 
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -161,6 +149,8 @@ export default function Home() {
       onEnviarToken();
   }, [inputToken, onEnviarToken]);
 
+
+
   const showDataClienteAll = async () => {
     setProcessando(true);
     try {
@@ -168,11 +158,11 @@ export default function Home() {
         dispatchCliente({ type: "complete", payload: response.data });
         setProcessando(false);
       }).catch((error) => {
-        console.log("Erro ao buscar os dados dos clientes!", error);
+        ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
         return;
       });
     } catch (error) {
-      console.log("Erro ao buscar os dados dos clientes!", error);
+      ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
       return;
     };
   };
@@ -225,17 +215,7 @@ export default function Home() {
     setIsRunning(true);
   };
 
-  // useEffect(() => {
-  //   if (isRunning && totalSegundos === 0) {
-  //     const intervalo = setInterval(async () => {
-  //       await getDataCustomer();
-  //     }, 60000);
-  //     return () => clearInterval(intervalo);
-  //   }
-  // }, [getDataCustomer, isRunning, totalSegundos]);
-
   useEffect(() => {
-    let tamanhoBase = totalBaseCnpj;
     if (isRunning) {
       intervaloTimer.current = setTimeout(async () => {
         setTotalSegundos(totalSegundos - 1);
@@ -254,58 +234,6 @@ export default function Home() {
     };
   }, [getDataCustomer, isRunning, totalSegundos]);
 
-  // useEffect(() => {
-  //   if ((isRunning) && (totalSegundos === 0)) {
-  //     intervalo.current = setInterval(async () => {
-  //       await getDataCustomer();
-  //       setTotalSegundos(60);
-  //     }, 60000);
-  //   }
-  //   return () => {
-  //     if (intervalo.current) {
-  //       clearInterval(intervalo.current);
-  //     }
-  //   };
-  // }, [getDataCustomer, isRunning, totalSegundos]);
-
-  // useEffect(() => {
-  //   if (isRunning) {
-  //     intervaloTimer.current = setTimeout(() => {
-  //       setTotalSegundos(totalSegundos - 1);
-
-  //       if (totalSegundos === 0) {
-  //         clearInterval(intervalo.current);
-  //         clearTimeout(intervaloTimer.current);
-  //         setTotalSegundos(60);
-  //         setIsRunning(true);
-
-  //       }
-  //     }, 1000);
-  //   }
-  //   return () => {
-  //     if (intervaloTimer.current) {
-  //       clearTimeout(intervaloTimer.current);
-  //     }
-  //   };
-  // }, [isRunning, totalSegundos]);
-
-
-  // useEffect(() => {
-  //   if (isRunning) {
-  //     intervalo.current = setTimeout(async () => {
-  //       setTotalSegundos(totalSegundos - 1);
-  //       if (totalSegundos === 0) {
-  //         clearInterval(intervalo.current);
-  //       }
-  //     }, 1000);
-  //   }
-  //   return () => {
-  //     if (intervalo.current) {
-  //       clearTimeout(intervalo.current);
-  //     }
-  //   };
-  // }, [isRunning, totalSegundos, getDataCustomer]);
-
   //busca dados cnpj Base mongodb
 
   const showCnpjAll = async () => {
@@ -314,7 +242,7 @@ export default function Home() {
       const data: TBaseCnpj[] = res.data; // Update the type of data to be an array of TBaseCnpj
       if (res.status === 200) {
         dispatch({ type: "complete", payload: res.data.dados });
-        setTotalBaseCnpj(data.length);
+        //setTotalBaseCnpj(data.length);
         setProcessando(false);
 
       } else if (res.status === 404) {
@@ -322,7 +250,7 @@ export default function Home() {
         return;
       }
     }).catch((error) => {
-      console.log("Erro ao buscar os dados!", error);
+      ShowToast.showToast("Erro ao buscar os dados de cnpj!", "error");
       setProcessando(false);
       return;
     });
@@ -360,27 +288,20 @@ export default function Home() {
     stopRequestCnpj();
   }, []);
 
+  useEffect(() => {
+    if (state.length === 0) {
+      stopRequestCnpj();
+      ShowToast.showToast("Processo Finalizado", "info");
+    }
+  }, [state]);
+
 
   return (
     <>
-
-      {/* <div className="flex flex-col min-w-full min-h-max lg:max-h-[calc(100vh-9.5rem)] 2xl:min-h-[calc(100vh-9.2rem)] bg-slate-700 p-4 relative"> */}
-
       <div className="Content">
         <Suspense fallback={<p className="font-bold text-2xl">Loading...</p>}>
           <Header>
-            <Button
-              component="label"
-              id="selecao-arquivo"
-              htmlFor="selecao-arquivo"
-              role={undefined}
-              variant="contained"
-              tabIndex={-1}
-              startIcon={<CloudUploadIcon />}
-            >
-              Selecione um arquivo .csv
-              <VisuallyHiddenInput type="file" accept=".csv" />
-            </Button>
+            <InputFileUpload fn={handlerCnpjBase} />
             <div className="flex h-[5rem] bg-orange-500 p-1 border border-slate-700 rounded-sm gap-3 items-center">
               <textarea
                 id="token"
@@ -429,22 +350,40 @@ export default function Home() {
               <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
             </div>
           </Header>
-          <div className={`grid grid-cols-4
+          {/* <div className={`grid grid-cols-4
                          gap-4 
                          sm:grid-cols-1 md:grid-cols-1 
                          lg:grid-cols-4 xl:grid-cols-4 
-                         2xl:grid-cols-4`}>
-            <div className="flex w-full text-sm">
-              {state && (
-                <TableCnpjBase data={state || null} />
-              )}
-            </div>
-            <div className="flex flex-col col-span-3 w-full max-h-full">
-              {stateCliente && (
-                <ClientesTable data={stateCliente} />
-              )}
-            </div>
-          </div>
+                         2xl:grid-cols-4`}> */}
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <Item>
+                  {state && (
+                    <TableCnpjBase data={state || null} />
+                  )}
+                </Item>
+              </Grid>
+              <Grid item xs={8}>
+                <Item>
+                  {stateCliente && (
+                    <ClientesTable data={stateCliente} />
+                  )}
+                </Item>
+              </Grid>
+              {/* <div className="flex w-full text-sm">
+                {state && (
+                  <TableCnpjBase data={state || null} />
+                )}
+              </div>
+              <div className="flex flex-col col-span-3 w-full max-h-full">
+                {stateCliente && (
+                  <ClientesTable data={stateCliente} />
+                )}
+              </div> */}
+            </Grid>
+          </Box>
+          {/* </div> */}
         </Suspense>
       </div >
       <ToastContainer transition={Bounce} />

@@ -25,7 +25,9 @@ export default function RootLayout({
         <div className="Conteudo">
           <Navigation />
           <ToastContainer />
-          {children}
+          <Suspense fallback={<Loading />}>
+            {children}
+          </Suspense>
           <Footer />
         </div>
       </body>

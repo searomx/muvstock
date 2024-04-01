@@ -7,14 +7,15 @@ import {
 } from 'material-react-table';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import { Customer } from '@prisma/client';
 import ColunasCliente from './ColunasCliente';
 import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 
-
 interface ClientesTableProps {
   data: Customer[];
+  // countClientes: number;
 }
 const csvConfig = mkConfig({
   fieldSeparator: ',',
@@ -24,7 +25,9 @@ const csvConfig = mkConfig({
 
 export default function ClientesTable(props: Readonly<ClientesTableProps>) {
   const { data } = props as { data: Customer[] };
+  const numClientes: number = props.data.length;
   const [globalFilter, setGlobalFilter] = useState('');
+  const [stripe, setStripe] = useState('odd');
 
   const handleExportData = () => {
     const csv = generateCsv(csvConfig)(data);
@@ -50,12 +53,11 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
       thickness: 5,
       size: 55,
     },
-    muiSkeletonProps: {}, // Declare and initialize muiSkeletonProps with an empty object
+    muiSkeletonProps: {},
     editDisplayMode: 'modal',
     createDisplayMode: 'modal',
-    enableRowSelection: true,
+    enableRowSelection: false,
     muiTableHeadCellProps: {
-      //easier way to create media queries, no useMediaQuery hook needed.
       sx: {
         fontSize: {
           xs: '10px',
@@ -66,10 +68,9 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
         },
       },
     },
-
     muiTableBodyProps: {
       sx: {
-        '& tr:nth-of-type(odd)': {
+        '& tr:nth-of-type(odd) > tr': {
           backgroundColor: '#f5f5f5',
         },
       },
@@ -93,6 +94,18 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
         >
           Exportar todos
         </Button>
+        <Card>
+          <Stack direction="row" alignItems="center" spacing={3} p={2} useFlexGap>
+            <Stack direction="row" spacing={1} useFlexGap>
+              <Chip
+                size="small"
+                label={`Total de Clientes: ${numClientes}`}
+                color="primary"
+              />
+            </Stack>
+          </Stack>
+        </Card>
+
       </Box>
     ),
     onPaginationChange: setPagination,
@@ -218,7 +231,5 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
       variant: 'outlined',
     },
   });
-
-
   return <MaterialReactTable table={table} />;
 };
