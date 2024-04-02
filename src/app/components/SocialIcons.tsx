@@ -5,7 +5,7 @@ export function SocialIcons() {
     <div className="flex gap-x-4">
       {/* Twitter icon */}
       <a
-        href="https://twitter.com/flaxyz"
+        href="#"
         target="_blank"
         rel=""
       >
