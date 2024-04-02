@@ -1,5 +1,5 @@
 'use client';
-import React, { Suspense, memo, useCallback, useEffect, useReducer, useRef, useState } from "react";
+import React, { Suspense, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
@@ -18,6 +18,8 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
+import PlayIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
 
 type BaseCnpj = {
   id?: string;
@@ -77,8 +79,21 @@ export default function Home() {
   const segundos = totalSegundos % 60;
   const intervalo = useRef<NodeJS.Timeout | null>(null);
   const intervaloTimer = useRef<NodeJS.Timeout | null>(null);
-  const [totalBaseCnpj, setTotalBaseCnpj] = useState<number>(0);
-  const [totalClientes, setTotalClientes] = useState<number>(0);
+  const [isPlay, setIsPlay] = useState<boolean>(false);
+
+  const soundRef = useRef<HTMLAudioElement | undefined>(null);
+  const MAX: number = 20;
+
+  const toggleAudio = useCallback(() => {
+    if (isPlay) {
+      soundRef.current?.pause();
+      setIsPlay(false);
+    } else {
+      void soundRef.current?.play();
+      setIsPlay(true);
+    }
+    setIsPlay(!isPlay);
+  }, [isPlay]);
 
   const SaveAsCnpj = useCallback(async (cnpjs: BaseCnpj[]) => {
     setProcessando(true);
@@ -148,8 +163,6 @@ export default function Home() {
     if (inputToken.length === 0)
       onEnviarToken();
   }, [inputToken, onEnviarToken]);
-
-
 
   const showDataClienteAll = async () => {
     setProcessando(true);
@@ -289,12 +302,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (state.length === 0) {
+    if ((state.length === 0) && (isRunning)) {
       stopRequestCnpj();
       ShowToast.showToast("Processo Finalizado", "info");
+      void soundRef.current?.play();
+      setIsPlay(true);
     }
-  }, [state]);
-
+  }, [state, toggleAudio, isRunning, stateCliente.length]);
 
   return (
     <>
@@ -345,16 +359,22 @@ export default function Home() {
               >
                 Interromper
               </Button>
+              <button
+                onClick={toggleAudio}
+                type="button"
+                className="m-auto w-20 rounded-full p-2 text-white shadow-sm"
+              >
+                {!isPlay ? (
+                  <PlayIcon className="h-12 w-12" aria-hidden="true" />
+                ) : (
+                  <PauseIcon className="h-12 w-12" aria-hidden="true" />
+                )}
+              </button>
             </div>
             <div className="flex h-[5rem] w-auto bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
               <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
             </div>
           </Header>
-          {/* <div className={`grid grid-cols-4
-                         gap-4 
-                         sm:grid-cols-1 md:grid-cols-1 
-                         lg:grid-cols-4 xl:grid-cols-4 
-                         2xl:grid-cols-4`}> */}
           <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>
               <Grid item xs={4}>
@@ -371,20 +391,11 @@ export default function Home() {
                   )}
                 </Item>
               </Grid>
-              {/* <div className="flex w-full text-sm">
-                {state && (
-                  <TableCnpjBase data={state || null} />
-                )}
-              </div>
-              <div className="flex flex-col col-span-3 w-full max-h-full">
-                {stateCliente && (
-                  <ClientesTable data={stateCliente} />
-                )}
-              </div> */}
+
             </Grid>
           </Box>
-          {/* </div> */}
         </Suspense>
+        <audio ref={soundRef} loop src="/message.mp3" />
       </div >
       <ToastContainer transition={Bounce} />
     </>

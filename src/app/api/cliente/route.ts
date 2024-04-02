@@ -55,20 +55,3 @@ export const GET = async (req: Request, res: Response) => {
     return NextResponse.json({ message: "Erro no Servidor" }, { status: 404 });
   }
 };
-
-export const POST = async (req: Request, res: Response) => {
-  const { nome, cnpj, municipio, uf }: DadosClientesProps = await req.json();
-  try {
-    const cliente = await prisma.customer.create({
-      data: {
-        nome,
-        cnpj,
-        municipio,
-        uf,
-      },
-    });
-    return NextResponse.json({ message: "dados:", cliente }, { status: 200 });
-  } catch (error) {
-    console.log("O erro é: ", error);
-  }
-};

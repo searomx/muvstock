@@ -62,49 +62,6 @@ type Qsa {
   qual_rep_legal String?
 }
 
-
-//
-// model Customer {
-//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
-//   name    String?
-//   cnpj    String?
-//   email   String?   @unique
-//   role    Role     @default(USER)
-//   posts   Post[]
-//   profile Profile?
-// }
-
-// model Profile {
-//   id     String @id @default(auto()) @map("_id") @db.ObjectId
-//   bio    String
-//   user   Customer   @relation(fields: [userId], references: [id])
-//   userId String @unique @db.ObjectId
-// }
-
-// model Post {
-//   id          String     @id @default(auto()) @map("_id") @db.ObjectId
-//   createdAt   DateTime   @default(now())
-//   title       String
-//   published   Boolean    @default(false)
-//   author      Customer       @relation(fields: [authorId], references: [id])
-//   authorId    String     @db.ObjectId
-//   categoryIDs String[]   @db.ObjectId
-//   categories  Category[] @relation(fields: [categoryIDs], references: [id])
-// }
-
-// model Category {
-//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
-//   name    String
-//   postIDs String[] @db.ObjectId
-//   posts   Post[]   @relation(fields: [postIDs], references: [id])
-// }
-
-// enum Role {
-//   USER
-//   ADMIN
-// }
-
-
 model Base {
   id                  String  @id @default(auto()) @map("_id") @db.ObjectId
   cnpj                String?
