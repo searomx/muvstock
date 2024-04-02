@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://muvstock.vercel.app/",
+  baseURL: process.env.HOST_URL,
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",

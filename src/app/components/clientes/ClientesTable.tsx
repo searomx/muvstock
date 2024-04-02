@@ -7,15 +7,16 @@ import {
 } from 'material-react-table';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
-import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import {
+  Box, Button, Card, Stack, Typography,
+} from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { Customer } from '@prisma/client';
 import ColunasCliente from './ColunasCliente';
 import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 
 interface ClientesTableProps {
-  data: Customer[];
-  // countClientes: number;
+  clientes: Customer[];
 }
 const csvConfig = mkConfig({
   fieldSeparator: ',',
@@ -23,14 +24,19 @@ const csvConfig = mkConfig({
   useKeysAsHeaders: true,
 });
 
-export default function ClientesTable(props: Readonly<ClientesTableProps>) {
-  const { data } = props as { data: Customer[] };
-  const numClientes: number = props.data.length;
+export default function ClientesTable(props: ClientesTableProps) {
+  const { clientes } = props as { clientes: Customer[] };
+
+  const numClientes: number = props.clientes.length;
   const [globalFilter, setGlobalFilter] = useState('');
-  const [stripe, setStripe] = useState('odd');
+  const [dados, setDados] = useState<Customer[]>(clientes);
+
+  const getCodigoCliente = (id: string) => {
+    console.log('Código do cliente:', id);
+  }
 
   const handleExportData = () => {
-    const csv = generateCsv(csvConfig)(data);
+    const csv = generateCsv(csvConfig)(clientes);
     download(csvConfig)(csv);
   };
 
@@ -44,9 +50,13 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
     [],
   );
 
+  const excluirCliente = (id: number) => {
+    getCodigoCliente(id.toString());
+  };
+
   const table = useMaterialReactTable({
     columns,
-    data,
+    data: clientes,
     positionToolbarAlertBanner: 'top',
     muiCircularProgressProps: {
       color: 'secondary',
@@ -57,6 +67,7 @@ export default function ClientesTable(props: Readonly<ClientesTableProps>) {
     editDisplayMode: 'modal',
     createDisplayMode: 'modal',
     enableRowSelection: false,
+    enableRowActions: true,
     muiTableHeadCellProps: {
       sx: {
         fontSize: {

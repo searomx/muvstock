@@ -387,7 +387,7 @@ export default function Home() {
               <Grid item xs={8}>
                 <Item>
                   {stateCliente && (
-                    <ClientesTable data={stateCliente} />
+                    <ClientesTable clientes={stateCliente} />
                   )}
                 </Item>
               </Grid>
