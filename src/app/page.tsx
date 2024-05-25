@@ -1,5 +1,14 @@
-'use client';
-import React, { Suspense, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+"use client";
+import React, {
+  Suspense,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { api } from "./services/server";
 import { Customer } from "@prisma/client";
 import Papa from "papaparse";
@@ -9,13 +18,13 @@ import ShowToast from "@/lib/utils/showToast";
 import Header from "./components/navigation/navbar/header";
 import TableCnpjBase from "./components/cnpj/TableCnpjBase";
 import ClientesTable from "./components/clientes/ClientesTable";
-import Button from '@mui/material/Button';
-import SendIcon from '@mui/icons-material/Send';
-import SignalWifiBadSharpIcon from '@mui/icons-material/SignalWifiBadSharp';
+import Button from "@mui/material/Button";
+import SendIcon from "@mui/icons-material/Send";
+import SignalWifiBadSharpIcon from "@mui/icons-material/SignalWifiBadSharp";
 import { ToastContainer, Bounce } from "react-toastify";
 import InputFileUpload from "./components/InputFileUpload";
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
+import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Grid";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import PlayIcon from "@mui/icons-material/PlayArrow";
@@ -24,25 +33,29 @@ import PauseIcon from "@mui/icons-material/Pause";
 type BaseCnpj = {
   id?: string;
   cnpj?: string;
-}
+};
 type TBaseCnpj = {
   id?: string;
   cnpj?: string;
-}
+};
 
 const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
   padding: theme.spacing(1),
-  textAlign: 'center',
+  textAlign: "center",
   color: theme.palette.text.secondary,
 }));
 
 const initialState: TBaseCnpj[] = [];
 const initialStateCliente: Customer[] = [];
 
-type Action = | { type: "complete"; payload: TBaseCnpj[] } | { type: "remove"; id: string };
-type ActionCliente = | { type: "complete"; payload: Customer[] } | { type: "add"; customer: Customer };
+type Action =
+  | { type: "complete"; payload: TBaseCnpj[] }
+  | { type: "remove"; id: string };
+type ActionCliente =
+  | { type: "complete"; payload: Customer[] }
+  | { type: "add"; customer: Customer };
 
 function reducer(state: TBaseCnpj[], action: Action) {
   switch (action.type) {
@@ -69,7 +82,10 @@ function reducerCliente(stateCliente: Customer[], action: ActionCliente) {
 
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [stateCliente, dispatchCliente] = useReducer(reducerCliente, initialStateCliente);
+  const [stateCliente, dispatchCliente] = useReducer(
+    reducerCliente,
+    initialStateCliente,
+  );
   const [inputCnpjUnico, setCnpjUnico] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("");
   const [processando, setProcessando] = useState<boolean>(false);
@@ -115,94 +131,110 @@ export default function Home() {
     }
   }, []);
 
-  const handlerCnpjBase = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    let cnpjs: BaseCnpj[] = [];
-    let dadosCnpjs: BaseCnpj[] = [];
-    const arquivo = e.target.files?.[0];
-    if (arquivo) {
-      setProcessando(true);
-      Papa.parse(arquivo, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        complete: async (results) => {
-          cnpjs = results.data as BaseCnpj[];
-          cnpjs.map((item) => dadosCnpjs.push({
-            cnpj: CompleteString.formatarPadString(item.cnpj.toString(), 14, "0"),
-          }));
-          SaveAsCnpj(dadosCnpjs);
-          setProcessando(false);
-        },
-        error: (error) => {
-          alert("Erro ao analisar o CSV: " + error.message);
-        },
-      });
-    }
-  }, [SaveAsCnpj]);
+  const handlerCnpjBase = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      let cnpjs: BaseCnpj[] = [];
+      let dadosCnpjs: BaseCnpj[] = [];
+      const arquivo = e.target.files?.[0];
+      if (arquivo) {
+        setProcessando(true);
+        Papa.parse(arquivo, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+          complete: async (results) => {
+            cnpjs = results.data as BaseCnpj[];
+            cnpjs.map((item) =>
+              dadosCnpjs.push({
+                cnpj: CompleteString.formatarPadString(
+                  item.cnpj.toString(),
+                  14,
+                  "0",
+                ),
+              }),
+            );
+            SaveAsCnpj(dadosCnpjs);
+            setProcessando(false);
+          },
+          error: (error) => {
+            alert("Erro ao analisar o CSV: " + error.message);
+          },
+        });
+      }
+    },
+    [SaveAsCnpj],
+  );
 
   const onEnviarToken = useCallback(async () => {
     if (inputToken.trim() === "") {
       return;
     } else {
-      await api.post("/api/token", {
-        token: inputToken.trim(),
-      }).then((response) => {
-        if (response.status === 200) {
-          ShowToast.showToast("Token Enviado com Sucesso!", "success");
-        } else if (response.status === 402) {
-          ShowToast.showToast("Token já está cadastrado!", "info");
-        }
-      }).catch(() => {
-        ShowToast.showToast("Erro ao enviar o token!", "error");
-      });
+      await api
+        .post("/api/token", {
+          token: inputToken.trim(),
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            ShowToast.showToast("Token Enviado com Sucesso!", "success");
+          } else if (response.status === 402) {
+            ShowToast.showToast("Token já está cadastrado!", "info");
+          }
+        })
+        .catch(() => {
+          ShowToast.showToast("Erro ao enviar o token!", "error");
+        });
     }
   }, [inputToken]);
 
   useEffect(() => {
-    if (inputToken.length === 0)
-      onEnviarToken();
+    if (inputToken.length === 0) onEnviarToken();
   }, [inputToken, onEnviarToken]);
 
   const showDataClienteAll = async () => {
     setProcessando(true);
     try {
-      await api.get("/api/cliente").then((response) => {
-        dispatchCliente({ type: "complete", payload: response.data });
-        setProcessando(false);
-      }).catch((error) => {
-        ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
-        return;
-      });
+      await api
+        .get("/api/cliente")
+        .then((response) => {
+          dispatchCliente({ type: "complete", payload: response.data });
+          setProcessando(false);
+        })
+        .catch((error) => {
+          ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
+          return;
+        });
     } catch (error) {
       ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
       return;
-    };
+    }
   };
   useEffect(() => {
     showDataClienteAll();
   }, []);
 
-  const saveCustomer = useCallback(async (strCnpj: string, idCnpj?: string) => {
-    try {
-      await api.post("/api/cnpj", { cnpj: strCnpj }).then((res) => {
-        if (res.status === 200) {
-          dispatch({ type: "remove", id: idCnpj });
-          ShowToast.showToast("Cliente Salvo com Sucesso!", "success");
-          dispatchCliente({ type: "add", customer: res.data.result });
-          setCnpjUnico("");
-          return res;
-        } else if (res.status === 404) {
-          ShowToast.showToast("Cnpj não encontrado!", "info");
-          return;
-        }
-      });
-    } catch (error) {
-      ShowToast.showToast(error.toString(), "error");
-      return;
-    }
-  }, [dispatchCliente, dispatch]);
-
+  const saveCustomer = useCallback(
+    async (strCnpj: string, idCnpj?: string) => {
+      try {
+        await api.post("/api/cnpj", { cnpj: strCnpj }).then((res) => {
+          if (res.status === 200) {
+            dispatch({ type: "remove", id: idCnpj });
+            ShowToast.showToast("Cliente Salvo com Sucesso!", "success");
+            dispatchCliente({ type: "add", customer: res.data.result });
+            setCnpjUnico("");
+            return res;
+          } else if (res.status === 404) {
+            ShowToast.showToast("Cnpj não encontrado!", "info");
+            return;
+          }
+        });
+      } catch (error) {
+        ShowToast.showToast(error.toString(), "error");
+        return;
+      }
+    },
+    [dispatchCliente, dispatch],
+  );
 
   const getDataCustomer = useCallback(async () => {
     if (inputCnpjUnico.trim() === "") {
@@ -251,22 +283,24 @@ export default function Home() {
 
   const showCnpjAll = async () => {
     setProcessando(true);
-    await api.get("/api/base").then((res) => {
-      const data: TBaseCnpj[] = res.data; // Update the type of data to be an array of TBaseCnpj
-      if (res.status === 200) {
-        dispatch({ type: "complete", payload: res.data.dados });
-        //setTotalBaseCnpj(data.length);
+    await api
+      .get("/api/base")
+      .then((res) => {
+        const data: TBaseCnpj[] = res.data; // Update the type of data to be an array of TBaseCnpj
+        if (res.status === 200) {
+          dispatch({ type: "complete", payload: res.data.dados });
+          //setTotalBaseCnpj(data.length);
+          setProcessando(false);
+        } else if (res.status === 404) {
+          ShowToast.showToast("Não existe registro na Base de Dados!", "error");
+          return;
+        }
+      })
+      .catch((error) => {
+        ShowToast.showToast("Erro ao buscar os dados de cnpj!", "error");
         setProcessando(false);
-
-      } else if (res.status === 404) {
-        ShowToast.showToast("Não existe registro na Base de Dados!", "error");
         return;
-      }
-    }).catch((error) => {
-      ShowToast.showToast("Erro ao buscar os dados de cnpj!", "error");
-      setProcessando(false);
-      return;
-    });
+      });
     return;
   };
   useEffect(() => {
@@ -302,7 +336,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if ((state.length === 0) && (isRunning)) {
+    if (state.length === 0 && isRunning) {
       stopRequestCnpj();
       ShowToast.showToast("Processo Finalizado", "info");
       void soundRef.current?.play();
@@ -328,7 +362,13 @@ export default function Home() {
                 onChange={(e) => setInputToken(e.target.value)}
                 className="border border-gray-400 bg-gray-100 rounded-md py-2 px-4 focus:outline-none focus:bg-white"
               ></textarea>
-              <Button id="btn-enviarToken" variant="contained" endIcon={<SendIcon />} name="btn-enviarToken" onClick={() => onEnviarToken()}>
+              <Button
+                id="btn-enviarToken"
+                variant="contained"
+                endIcon={<SendIcon />}
+                name="btn-enviarToken"
+                onClick={() => onEnviarToken()}
+              >
                 Enviar Token
               </Button>
             </div>
@@ -346,8 +386,8 @@ export default function Home() {
                 id="btn-enviar-individual"
                 name="btn-enviar-individual"
                 onClick={() => startTemporizador()}
-                variant="contained" endIcon={<SendIcon />}
-
+                variant="contained"
+                endIcon={<SendIcon />}
               >
                 Enviar Cnpj
               </Button>
@@ -355,7 +395,8 @@ export default function Home() {
                 id="btn-stop"
                 name="btn-stop"
                 onClick={() => stopRequestCnpj()}
-                variant="contained" endIcon={<SignalWifiBadSharpIcon />}
+                variant="contained"
+                endIcon={<SignalWifiBadSharpIcon />}
               >
                 Interromper
               </Button>
@@ -371,32 +412,25 @@ export default function Home() {
                 )}
               </button>
             </div>
-            <div className="flex h-[5rem] w-auto bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
-              <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
+            <div className="flex h-[5rem] bg-orange-500 p-1 border-slate-700 rounded-sm gap-1 items-center">
+              <span className="text-white text-sm lg:text-sm xl:text-md">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</span>
             </div>
           </Header>
           <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>
               <Grid item xs={4}>
-                <Item>
-                  {state && (
-                    <TableCnpjBase data={state || null} />
-                  )}
-                </Item>
+                <Item>{state && <TableCnpjBase data={state || null} />}</Item>
               </Grid>
               <Grid item xs={8}>
                 <Item>
-                  {stateCliente && (
-                    <ClientesTable clientes={stateCliente} />
-                  )}
+                  {stateCliente && <ClientesTable clientes={stateCliente} />}
                 </Item>
               </Grid>
-
             </Grid>
           </Box>
         </Suspense>
         <audio ref={soundRef} loop src="/message.mp3" />
-      </div >
+      </div>
       <ToastContainer transition={Bounce} />
     </>
   );
