@@ -36,7 +36,9 @@ export default function Logo() {
     <>
       <Link href="/" style={{ display: showButton ? "none" : "block" }}>
         <div className="flex items-center p-2 border border-slate-400 rounded-sm">
-          <h1 className="text-2xl font-bold text-white border border-solid border-slate-400 rounded-sm p-2">B4Tech</h1>
+          <h1 className="text-2xl font-bold text-white border border-solid border-slate-400 rounded-sm p-2">
+            MUVSTOK
+          </h1>
         </div>
         {/* <Image
           src="/images/logo.png"
@@ -55,4 +57,4 @@ export default function Logo() {
       </div>
     </>
   );
-};
+}

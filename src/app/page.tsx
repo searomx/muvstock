@@ -412,8 +412,8 @@ export default function Home() {
                 )}
               </button>
             </div>
-            <div className="flex h-[5rem] bg-orange-500 p-1 border-slate-700 rounded-sm gap-1 items-center">
-              <span className="text-white text-sm lg:text-sm xl:text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</span>
+            <div className="flex h-[5rem] w-auto bg-orange-500 p-1 border-slate-700 rounded-sm gap-3 items-center">
+              <h1 className="text-white text-2xl">{`${minutos.toString().padStart(2, "0")} : ${segundos.toString().padStart(2, "0")}`}</h1>
             </div>
           </Header>
           <Box sx={{ flexGrow: 1 }}>
