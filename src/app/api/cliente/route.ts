@@ -23,13 +23,13 @@ type DadosClientesProps = {
     {
       text: string;
       code: string;
-    }
+    },
   ];
   atividades_secundarias: [
     {
       text: string;
       code: string;
-    }
+    },
   ];
   qsa: [
     {
@@ -38,16 +38,18 @@ type DadosClientesProps = {
       pais_origem: string;
       nome_rep_legal: string;
       qual_rep_legal: string;
-    }
+    },
   ];
 };
-
 
 export const GET = async (req: Request, res: Response) => {
   try {
     const data = await getAllClientes();
     if (data.length === 0) {
-      return NextResponse.json({ message: "Nenhum cliente cadastrado" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Nenhum cliente cadastrado" },
+        { status: 404 },
+      );
     } else {
       return NextResponse.json(data, { status: 200 });
     }

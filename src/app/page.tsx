@@ -199,6 +199,7 @@ export default function Home() {
         .then((response) => {
           dispatchCliente({ type: "complete", payload: response.data });
           setProcessando(false);
+          console.log(response.data);
         })
         .catch((error) => {
           ShowToast.showToast("Erro ao buscar os dados dos clientes!", "error");
