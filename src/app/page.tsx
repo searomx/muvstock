@@ -251,8 +251,8 @@ export default function Home() {
       const idCnpj = state.filter((cnpj) => cnpj.cnpj === strCnpj);
       if (strCnpj) {
         setIsRunning(false);
-        // await saveCustomer(strCnpj, idCnpj[0].id);
-        await saveCustomer(strCnpj);
+        await saveCustomer(strCnpj, idCnpj[0].id);
+        // await saveCustomer(strCnpj);
       }
     }
   }, [inputCnpjUnico, saveCustomer, state]);
