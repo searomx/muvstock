@@ -53,6 +53,7 @@ export async function POST(req: NextRequest, resp: NextResponse) {
           cnpj: xcnpj,
         },
         select: {
+          id: true,
           cnpj: true,
         },
       });

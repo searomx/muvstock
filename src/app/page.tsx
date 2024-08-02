@@ -252,7 +252,6 @@ export default function Home() {
       if (strCnpj) {
         setIsRunning(false);
         await saveCustomer(strCnpj, idCnpj[0].id);
-        // await saveCustomer(strCnpj);
       }
     }
   }, [inputCnpjUnico, saveCustomer, state]);
